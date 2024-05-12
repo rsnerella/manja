@@ -1,0 +1,14 @@
+[package]
+name = "manja"
+version = "0.1.0"
+edition = "2021"
+authors = ["Paresh Saxena <pareshsaxena@gmail.com>"]
+license = "MIT"
+description = "Asynchronous client library for Zerodha's KiteConnect trading API"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+stubborn-io = "0.3.4"
+tokio-tungstenite = "0.21.0"
