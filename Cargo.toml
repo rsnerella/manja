@@ -5,5 +5,8 @@ edition = "2021"
 authors = ["Paresh Saxena <pareshsaxena@gmail.com>"]
 license = "MIT"
 description = "Asynchronous client library for Zerodha's KiteConnect trading API"
+repository = "https://github.com/saxena-dev/manja"
+readme = "README.md"
+exclude = [".*"]
 
 [dependencies]
