@@ -7,7 +7,15 @@ license = "MIT"
 description = "Asynchronous client library for Zerodha's KiteConnect trading API"
 repository = "https://github.com/saxena-dev/manja"
 readme = "README.md"
-exclude = [".*"]
+documentation = "https://docs.rs/manja"
+exclude = [
+    "Cargo.lock",
+    "tests/*",
+    "examples/*",
+    "*.md",
+    ".*",
+    ".temp/*"
+]
 
 [dependencies]
 base32 = "0.5.0"
