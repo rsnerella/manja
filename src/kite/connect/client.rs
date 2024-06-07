@@ -1,149 +1,237 @@
 //! Asynchronous KiteConnect client
+use std::time::Duration;
 
-use reqwest::header::{HeaderMap, HeaderValue};
-use std::collections::HashMap;
+use reqwest::Request;
+use secrecy::{ExposeSecret, Secret};
+use serde::{de::DeserializeOwned, Serialize};
+use tracing::info;
 
-use crate::kite::connect::client_builder::KiteConnectClientBuilder;
-use crate::kite::connect::config::KiteConfig;
-use crate::kite::connect::credentials::KiteCredentials;
-use crate::kite::connect::models::{user::UserSession, KiteApiResponse};
-use crate::kite::connect::utils::create_checksum;
-use crate::kite::error::{ManjaError, Result};
-use crate::kite::login::flow::login_flow;
+use crate::kite::connect::{
+    api::{Session, User},
+    config::Config,
+    models::{KiteApiResponse, UserSession},
+};
+use crate::kite::error::Result;
+use crate::kite::traits::KiteConfig;
 
-/// An asynchronous `KiteConnectClient` to make HTTP requests with.
+use super::credentials;
+
+/// An asynchronous Kite Connect client to make HTTP requests with.
 ///
-/// `KiteConnectClient` is a wrapper over `reqwest::Client` which holds a connection
+/// `Client` is a wrapper over `reqwest::Client` which holds a connection
 /// pool internally. It is advisable to create one and **reuse** it.
 ///
 /// You do **not** have to wrap `KiteConnectClient` in an [`Rc`] or [`Arc`] to
 /// **reuse** it because the `reqwest::Client` used internally already uses an
 /// [`Arc`].
 #[derive(Clone)]
-pub struct KiteConnectClient {
-    /// A reqwest client instance
+pub struct HTTPClient {
     client: reqwest::Client,
-    /// User credentials to access `KiteConnect` trading API
-    kite_credentials: KiteCredentials,
-    /// Kite config
-    kite_config: KiteConfig,
-    /// User session
+    config: Config,
+    backoff: backoff::ExponentialBackoff,
     session: Option<UserSession>,
 }
 
-impl KiteConnectClient {
-    /// Construct a `KiteConnectClient` using default configuration.
-    ///
-    /// Sample use:
-    /// ```no_run
-    /// use manja::kite::connect::credentials::KiteCredentials;
-    /// use manja::kite::connect::client::KiteConnectClient;
-    ///
-    /// let credentials = KiteCredentials::load_from_env().expect("User credentials not found!");
-    /// let client = KiteConnectClient::default_with_credentials(credentials);
-    /// ```
-    pub fn default_with_credentials(credentials: KiteCredentials) -> Result<Self> {
-        KiteConnectClientBuilder::default()
-            .with_credentials(credentials)
+impl Default for HTTPClient {
+    fn default() -> Self {
+        Self {
+            // Default timeout for I/O operations: 10 seconds
+            client: Self::default_reqwest_client(10),
+            // Default config parameters are loaded from environment variables
+            config: Config::default(),
+            backoff: Default::default(),
+            session: None,
+        }
+    }
+}
+
+impl HTTPClient {
+    // Default `reqwest::Client` with timeout for I/O operations
+    fn default_reqwest_client(timeout_seconds: u64) -> reqwest::Client {
+        reqwest::ClientBuilder::new()
+            .timeout(Duration::from_secs(timeout_seconds))
             .build()
+            // This should not fail. Fallback to default `reqwest::Client`.
+            .unwrap_or_else(|_| reqwest::Client::new())
     }
 
-    /// Internal function to construct a `KiteConnectClient` from parts.
-    ///
-    pub fn from_parts(
-        client: reqwest::Client,
-        kite_credentials: KiteCredentials,
-        kite_config: KiteConfig,
-    ) -> Self {
+    fn get_access_token(&self) -> Option<Secret<String>> {
+        // Clone and return the access token, if available
+        match self.session {
+            Some(ref user_session) => Some((user_session.access_token).clone()),
+            None => None,
+        }
+    }
+
+    /// Create a default HTTP client with config.
+    pub fn with_config(config: Config) -> Self {
         Self {
-            client,
-            kite_credentials,
-            kite_config,
+            // Default timeout for I/O operations: 10 seconds
+            client: Self::default_reqwest_client(10),
+            config,
+            backoff: Default::default(),
             session: None,
         }
     }
 
-    /// HTTP header for accessing trading API version 3
-    pub fn api_v3_headers(&self) -> HeaderMap {
-        let mut headers = reqwest::header::HeaderMap::new();
-        headers.insert("X-Kite-Version", HeaderValue::from_static("3"));
-        headers
+    /// Exponential backoff for retrying [rate limited](https://kite.trade/docs/connect/v3/exceptions/#api-rate-limit) requests.
+    pub fn with_backoff(mut self, backoff: backoff::ExponentialBackoff) -> Self {
+        self.backoff = backoff;
+        self
     }
 
-    pub fn add_auth_token_header(&self, headers: &mut HeaderMap) -> Result<()> {
-        match self.session {
-            Some(ref session) => {
-                headers.insert(
-                    "Authorization",
-                    HeaderValue::from_str(&format!(
-                        "token {:?}:{}",
-                        self.kite_credentials.api_key(),
-                        session.access_token
-                    ))?,
-                );
-                Ok(())
-            }
-            None => Err(format!("No valid user session.").into()),
+    /// Add `UserSession` to the `HTTPClient`
+    pub fn with_user_session(mut self, user_session: UserSession) -> Self {
+        self.session = Some(user_session);
+        self
+    }
+
+    pub fn set_user_session(&mut self, user_session: Option<UserSession>) {
+        self.session = user_session;
+        ()
+    }
+
+    /// User session, if it exists.
+    pub fn user_session(&self) -> Option<&UserSession> {
+        self.session.as_ref()
+    }
+
+    /// HTTP configurations and Kite user credentials.
+    pub fn http_config(&self) -> &Config {
+        &self.config
+    }
+
+    /// Reqwest HTTP Client.
+    pub fn http_client(&self) -> &reqwest::Client {
+        &self.client
+    }
+
+    // --- [ API Groups ] ---
+
+    /// To call [User] related APIs using this client.
+    pub fn user(&self) -> User {
+        User::new(self)
+    }
+
+    /// To call [Session] related APIs using this client.
+    pub fn session(&mut self) -> Session {
+        Session::new(self)
+    }
+
+    // --- [ HTTP verb functions ] ---
+
+    /// Make a GET request to {path} and deserialize the response body
+    pub(crate) async fn get<Model>(&self, path: &str) -> Result<KiteApiResponse<Model>>
+    where
+        Model: DeserializeOwned,
+    {
+        let http_request = self
+            .http_client()
+            .get(self.config.url(path))
+            // .query(&self.config.query())
+            // Fetch access token for protected endpoints, if available
+            .headers(self.config.headers(self.get_access_token()))
+            .build()?;
+
+        self.execute(http_request).await
+    }
+
+    /// Make a POST request to {path} and deserialize the response body
+    pub(crate) async fn post<Model, Payload>(
+        &self,
+        path: &str,
+        data: Payload,
+    ) -> Result<KiteApiResponse<Model>>
+    where
+        Model: DeserializeOwned,
+        Payload: Serialize,
+    {
+        let http_request = self
+            .http_client()
+            .post(self.config.url(path))
+            // .query(&self.config.query())
+            // Fetch access token for protected endpoints, if available
+            .headers(self.config.headers(self.get_access_token()))
+            .json(&data)
+            .build()?;
+
+        self.execute(http_request).await
+    }
+
+    /// POST a form at {path} and deserialize the response body into the generic `Model` type
+    pub(crate) async fn post_form<Model, F>(
+        &self,
+        path: &str,
+        form: &F,
+    ) -> Result<KiteApiResponse<Model>>
+    where
+        Model: DeserializeOwned,
+        F: Serialize + ?Sized,
+    {
+        let http_request = self
+            .http_client()
+            .post(self.config.url(path))
+            // .query(&self.config.query())
+            // Fetch access token for protected endpoints, if available
+            .headers(self.config.headers(self.get_access_token()))
+            .form(form)
+            .build()?;
+
+        self.execute(http_request).await
+    }
+
+    /// Make a DELETE request to {path} and deserialize the response body
+    pub(crate) async fn delete<Model>(
+        &self,
+        path: &str,
+        with_auth: bool,
+    ) -> Result<KiteApiResponse<Model>>
+    where
+        Model: DeserializeOwned,
+    {
+        let mut http_request_builder = self
+            .http_client()
+            .delete(self.config.url(path))
+            // Fetch access token for protected endpoints, if available
+            .headers(self.config.headers(self.get_access_token()));
+
+        if with_auth {
+            let api_key = self.http_config().credentials().api_key();
+            // Construct Vec<&str, &str> for query construction
+            let query_vec = vec![
+                ("api_key", api_key.expose_secret().as_str()),
+                (
+                    "access_token",
+                    self.user_session()
+                        .and_then(|session| Some(session.access_token.expose_secret().as_str()))
+                        .unwrap_or_else(|| &"(ﾉﾟ0ﾟ)ﾉ~"),
+                ),
+            ];
+            http_request_builder = http_request_builder.query(&query_vec);
         }
+        let http_request = http_request_builder.build()?;
+
+        self.execute(http_request).await
     }
 
-    /// Generate a `request token` which can be used to generate an `access token`.
-    ///
-    /// This is the first half of the [login flow](https://kite.trade/docs/connect/v3/user/#login-flow).
-    pub async fn generate_request_token(&self) -> Result<String> {
-        login_flow(
-            &self.kite_config.base_url_login,
-            &self.kite_config.redirect_url,
-            &self.kite_credentials,
-        )
-        .await
-    }
-
-    /// Generate a session using a `request token`.
-    ///
-    /// This is the second half of the [login flow](https://kite.trade/docs/connect/v3/user/#login-flow).
-    ///
-    pub async fn generate_session(
-        mut self,
-        request_token: &str,
-    ) -> Result<KiteApiResponse<UserSession>> {
-        // Extract credentials
-        let api_key = self.kite_credentials.api_key();
-        let api_secret = self.kite_credentials.api_secret();
-        // Construct session token URL
-        let mut session_token_url = self.kite_config.base_url_api.clone();
-        session_token_url.set_path("/session/token");
-        // Define the headers
-        let headers = self.api_v3_headers();
-        // Construct request payload
-        let checksum = create_checksum(api_key.as_str(), request_token, api_secret.as_str());
-        let mut params = HashMap::new();
-        params.insert("api_key", api_key.as_str());
-        params.insert("request_token", request_token);
-        params.insert("checksum", checksum.as_str());
-
-        // Send the POST request
-        match self
-            .client
-            .post(session_token_url.as_str())
-            .headers(headers)
-            .form(&params)
-            .send()
-            .await
-        {
+    // Execute an HTTP request asynchronously
+    async fn execute<Model>(&self, request: Request) -> Result<KiteApiResponse<Model>>
+    where
+        Model: DeserializeOwned,
+    {
+        match self.http_client().execute(request).await {
             Ok(response) => {
                 match response.text().await {
                     Ok(json_response) => {
-                        // Attempt to parse into a Kite API response with a `UsesSession` object
-                        let kite_response =
-                            serde_json::from_str::<KiteApiResponse<UserSession>>(&json_response)?;
-                        self.session = kite_response.data.clone();
-                        Ok(kite_response)
+                        // Attempt to parse into a Kite API response on a generic type (Model)
+                        Ok(serde_json::from_str::<KiteApiResponse<Model>>(
+                            &json_response,
+                        )?)
                     }
-                    Err(e) => Err(ManjaError::from(e)),
+                    Err(err) => Err(err.into()),
                 }
             }
-            Err(e) => Err(ManjaError::from(e)),
+            Err(err) => Err(err.into()),
         }
     }
 }

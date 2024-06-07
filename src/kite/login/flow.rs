@@ -7,6 +7,8 @@ use crate::kite::login::{
     chrome::launch_browser, tokio_sleep, totp::generate_totp, BrowserClient, TokioDuration,
 };
 use fantoccini::Locator;
+use secrecy::ExposeSecret;
+use tracing::info;
 use url::Url;
 
 pub async fn login_flow(
@@ -21,7 +23,7 @@ pub async fn login_flow(
         .goto(&format!(
             "{}?api_key={}",
             base_url_login.as_str(),
-            kite_credentials.api_key().as_str()
+            kite_credentials.api_key().expose_secret().as_str()
         ))
         .await;
     // Enter login ID
@@ -29,14 +31,14 @@ pub async fn login_flow(
         .wait()
         .for_element(Locator::XPath(r#"//*[@id="userid"]"#))
         .await?
-        .send_keys(kite_credentials.user_id().as_str())
+        .send_keys(kite_credentials.user_id().expose_secret().as_str())
         .await?;
     // Enter password
     client
         .wait()
         .for_element(Locator::XPath(r#"//*[@id="password"]"#))
         .await?
-        .send_keys(kite_credentials.user_pwd().as_str())
+        .send_keys(kite_credentials.user_pwd().expose_secret().as_str())
         .await?;
     // Click the login button
     client
@@ -48,7 +50,7 @@ pub async fn login_flow(
         .click()
         .await?;
     // Generate the TOTP code for the current time
-    let current_code = generate_totp(kite_credentials.totp_key().as_str());
+    let current_code = generate_totp(kite_credentials.totp_key().expose_secret().as_str());
     // Enter TOTP access token
     client
         .wait()
@@ -78,7 +80,7 @@ pub async fn login_flow(
     }
 }
 
-pub async fn wait_for_url(
+async fn wait_for_url(
     client: &BrowserClient,
     url_base: Url,
     timeout: TokioDuration,

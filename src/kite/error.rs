@@ -36,12 +36,16 @@ pub enum ManjaError {
 
     // The request couldn't be completed because there was an error when trying
     // to do so.
-    #[error("Request: {0}")]
+    #[error("HTTP Client error: {0}")]
     Client(#[from] reqwest::Error),
 
     // TOTP error.
     #[error("TOTP error: {0}")]
     TotpError(String),
+
+    // Config error
+    #[error("Config error: {0}")]
+    ConfigError(#[from] url::ParseError),
 
     /// The request was made, but the server returned an unsuccessful status
     /// code, such as 404 or 503. In some cases, the response may contain a
