@@ -1,67 +1,157 @@
+//! Traits module for KiteConnect API.
+//!
+//! This module defines various traits used for configuring and interacting with
+//! the KiteConnect API. These traits provide the necessary interfaces for managing
+//! API calls, handling authentication, and executing login flows.
+//!
+//! # Traits
+//!
+//! - `KiteConfig`: Provides configuration details required for making API calls,
+//!   including methods for constructing headers, generating URLs, and accessing credentials.
+//! - `KiteLoginFlow`: Manages the login flow for KiteConnect, defining a method for
+//!   generating a request token by executing an asynchronous function.
+//! - `KiteAuth`: Adds the `Authorization` header to HTTP requests as required by
+//!   KiteConnect, with the `api_key:access_token` combination.
+//!
+//! # Example Usage
+//!
+//! ```rust
+//! use reqwest::header::HeaderMap;
+//! use secrecy::Secret;
+//! use std::future::Future;
+//! use std::pin::Pin;
+//! use crate::kite::connect::credentials::KiteCredentials;
+//! use crate::kite::error::Result;
+//!
+//! struct MyKiteConfig {
+//!     // Configuration fields
+//! }
+//!
+//! impl KiteConfig for MyKiteConfig {
+//!     fn headers(&self, access_token: Option<Secret<String>>) -> HeaderMap {
+//!         // Implementation
+//!     }
+//!     fn url(&self, path: &str) -> String {
+//!         // Implementation
+//!     }
+//!     fn api_base(&self) -> &str {
+//!         // Implementation
+//!     }
+//!     fn api_login(&self) -> &str {
+//!         // Implementation
+//!     }
+//!     fn api_redirect(&self) -> &str {
+//!         // Implementation
+//!     }
+//!     fn credentials(&self) -> &KiteCredentials {
+//!         // Implementation
+//!     }
+//! }
+//! ```
+use std::future::Future;
+use std::pin::Pin;
+
 use reqwest::header::{HeaderMap, HeaderValue};
 use secrecy::Secret;
 
 use crate::kite::connect::credentials::KiteCredentials;
 use crate::kite::error::Result;
 
-/// `manja::kite::connect::Client` uses this trait for every REST API call on
-/// KiteConnect
-pub trait KiteConfig {
-    fn headers(&self, access_token: Option<Secret<String>>) -> HeaderMap;
-    fn url(&self, path: &str) -> String;
-    // fn query(&self) -> Vec<(&str, &str)>;
-    fn api_base(&self) -> &str;
-    fn api_login(&self) -> &str;
-    fn api_redirect(&self) -> &str;
-    fn credentials(&self) -> &KiteCredentials;
-}
-
-pub trait KiteLoginFlow {
-    /// Generates a request token using the provided login function.
+/// Trait for providing configuration details required for making API calls to KiteConnect.
+///
+/// This trait must be implemented by any configuration struct used by the `HTTPClient`
+/// for making REST API calls to KiteConnect. It includes methods for constructing headers,
+/// generating URLs, and accessing credentials.
+pub trait KiteConfig: Send {
+    /// Generates the headers required for making API requests.
     ///
     /// # Arguments
     ///
-    /// * `login` - A closure that takes a reference to a type implementing the `Config` trait
-    ///   and returns a `Result` containing the request token as a `String`.
+    /// * `access_token` - An optional secret containing the access token for authorization.
     ///
     /// # Returns
     ///
-    /// A `Result` containing the request token as a `String` if successful, or an error otherwise.
+    /// A `HeaderMap` containing the necessary headers.
+    fn headers(&self, access_token: Option<Secret<String>>) -> HeaderMap;
+
+    /// Constructs the full URL for a given API path.
     ///
-    /// # Example
+    /// # Arguments
     ///
-    /// ```
-    /// use manja::kite::error::Result;
-    /// use manja::kite::connect::config::Config;
+    /// * `path` - The API endpoint path.
     ///
-    /// struct MySession;
-    /// struct MyConfig;
+    /// # Returns
     ///
-    /// impl Config for MyConfig {}
+    /// A `String` containing the full URL.
+    fn url(&self, path: &str) -> String;
+
+    /// Returns the base URL for the KiteConnect API.
     ///
-    /// impl LoginFlow for MySession {
-    ///     fn generate_request_token<F, C>(&self, login: F) -> Result<String>
-    ///     where
-    ///         F: Fn(&C) -> Result<String>,
-    ///         C: Config,
-    ///     {
-    ///         let config = MyConfig;
-    ///         login(&config)
-    ///     }
-    /// }
+    /// # Returns
     ///
-    /// let session = MySession;
-    /// let token_result = session.generate_request_token(|_config| Ok("request_token".to_string()));
-    /// assert!(token_result.is_ok());
-    /// ```
-    fn generate_request_token<F>(&self, login: F) -> Result<String>
-    where
-        F: Fn(&dyn KiteConfig) -> Result<String>;
+    /// A string slice containing the base URL.
+    fn api_base(&self) -> &str;
+
+    /// Returns the URL for the KiteConnect login page.
+    ///
+    /// # Returns
+    ///
+    /// A string slice containing the login URL.
+    fn api_login(&self) -> &str;
+
+    /// Returns the redirect URL after a successful login.
+    ///
+    /// # Returns
+    ///
+    /// A string slice containing the redirect URL.
+    fn api_redirect(&self) -> &str;
+
+    /// Provides the credentials required for authentication.
+    ///
+    /// # Returns
+    ///
+    /// A reference to `KiteCredentials` containing the necessary credentials.
+    fn credentials(&self) -> &KiteCredentials;
 }
 
+/// Trait for managing the login flow for KiteConnect.
+///
+/// This trait defines a method for generating a request token by executing
+/// an asynchronous function that handles the login flow.
+pub trait KiteLoginFlow {
+    /// Generates a request token by executing the provided asynchronous function.
+    ///
+    /// # Arguments
+    ///
+    /// * `f` - A closure that takes a boxed `KiteConfig` and returns a future
+    ///   resolving to a `Result<String>`.
+    ///
+    /// # Returns
+    ///
+    /// A pinned box containing a future that resolves to a `Result<String>`.
+    fn gen_request_token<F, Fut>(
+        &self,
+        f: F,
+    ) -> Pin<Box<dyn Future<Output = Result<String>> + Send>>
+    where
+        F: Fn(Box<dyn KiteConfig>) -> Fut + Send + 'static,
+        Fut: Future<Output = Result<String>> + Send + 'static;
+}
+
+/// Trait for adding the `Authorization` header to HTTP requests as required by KiteConnect.
+///
+/// This trait defines a method for adding the `Authorization` header to a `HeaderMap`
+/// with the `api_key:access_token` combination.
 pub trait KiteAuth {
-    /// Adds the `Authorization` header as per Kite's official documentation
-    /// on [signing HTTP requests](https://kite.trade/docs/connect/v3/user/#signing-requests).
+    /// Adds the `Authorization` header to the `HeaderMap`.
+    ///
+    /// This method constructs the header as specified in the official
+    /// KiteConnect [documentation](https://kite.trade/docs/connect/v3/user/#signing-requests) for signing HTTP requests.
+    ///
+    /// # Arguments
+    ///
+    /// * `api_key` - The API key for KiteConnect.
+    /// * `access_token` - The access token obtained after login.
     fn add_auth_header(&mut self, api_key: String, access_token: String) {}
 }
 

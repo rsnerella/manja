@@ -1,20 +1,50 @@
 //! Asynchronous KiteConnect client
+//!
+//! This module provides an asynchronous client for interacting with the KiteConnect API.
+//! The `HTTPClient` struct encapsulates a `reqwest::Client` and includes methods for making
+//! HTTP requests to various KiteConnect endpoints. The client supports retry mechanisms
+//! with exponential backoff and handles user session management.
+//!
+//! # Features
+//!
+//! - **Session Management**: Manages user sessions, including storing and retrieving session tokens.
+//! - **Request Handling**: Provides methods for making GET, POST, POST form, and DELETE requests.
+//! - **Configurable**: Allows configuration via the `Config` struct, which can be loaded from
+//!   environment variables or passed directly.
+//!
+//! # Examples
+//!
+//! ```rust
+//! use crate::kite::connect::client::HTTPClient;
+//! use crate::kite::connect::config::Config;
+//!
+//! // Create a new client with default settings
+//! let client = HTTPClient::default();
+//!
+//! // Create a new client with a custom configuration
+//! let config = Config::default();
+//! let client = HTTPClient::with_config(config);
+//! ```
+//!
+//! For more information on using the KiteConnect API, refer to the
+//! [official documentation](https://kite.trade/docs/connect/v3/).
+
+use core::future::Future;
 use std::time::Duration;
 
-use reqwest::Request;
+use reqwest::{Request, StatusCode};
 use secrecy::{ExposeSecret, Secret};
 use serde::{de::DeserializeOwned, Serialize};
-use tracing::info;
 
-use crate::kite::connect::{
-    api::{Session, User},
-    config::Config,
-    models::{KiteApiResponse, UserSession},
+use crate::kite::{
+    connect::{
+        api::{Session, User},
+        config::Config,
+        models::{KiteApiResponse, UserSession},
+    },
+    error::{map_deserialization_error, KiteApiError, KiteApiException, ManjaError, Result},
+    traits::KiteConfig,
 };
-use crate::kite::error::Result;
-use crate::kite::traits::KiteConfig;
-
-use super::credentials;
 
 /// An asynchronous Kite Connect client to make HTTP requests with.
 ///
@@ -121,19 +151,26 @@ impl HTTPClient {
     // --- [ HTTP verb functions ] ---
 
     /// Make a GET request to {path} and deserialize the response body
-    pub(crate) async fn get<Model>(&self, path: &str) -> Result<KiteApiResponse<Model>>
+    pub(crate) async fn get<Model>(
+        &self,
+        path: &str,
+        retry_after: Duration,
+    ) -> Result<KiteApiResponse<Model>>
     where
         Model: DeserializeOwned,
     {
-        let http_request = self
-            .http_client()
-            .get(self.config.url(path))
-            // .query(&self.config.query())
-            // Fetch access token for protected endpoints, if available
-            .headers(self.config.headers(self.get_access_token()))
-            .build()?;
+        let request_baker = || async {
+            Ok((
+                self.client
+                    .get(self.config.url(path))
+                    // Fetch access token for protected endpoints, if available
+                    .headers(self.config.headers(self.get_access_token()))
+                    .build()?,
+                retry_after,
+            ))
+        };
 
-        self.execute(http_request).await
+        self.execute(request_baker).await
     }
 
     /// Make a POST request to {path} and deserialize the response body
@@ -141,21 +178,34 @@ impl HTTPClient {
         &self,
         path: &str,
         data: Payload,
+        retry_after: Duration,
     ) -> Result<KiteApiResponse<Model>>
     where
         Model: DeserializeOwned,
         Payload: Serialize,
     {
-        let http_request = self
-            .http_client()
-            .post(self.config.url(path))
-            // .query(&self.config.query())
-            // Fetch access token for protected endpoints, if available
-            .headers(self.config.headers(self.get_access_token()))
-            .json(&data)
-            .build()?;
+        let request_baker = || async {
+            Ok((
+                self.client
+                    .post(self.config.url(path))
+                    // Fetch access token for protected endpoints, if available
+                    .headers(self.config.headers(self.get_access_token()))
+                    .json(&data)
+                    .build()?,
+                retry_after,
+            ))
+        };
 
-        self.execute(http_request).await
+        // let http_request = self
+        //     .client
+        //     .post(self.config.url(path))
+        //     // .query(&self.config.query())
+        //     // Fetch access token for protected endpoints, if available
+        //     .headers(self.config.headers(self.get_access_token()))
+        //     .json(&data)
+        //     .build()?;
+
+        self.execute(request_baker).await
     }
 
     /// POST a form at {path} and deserialize the response body into the generic `Model` type
@@ -177,7 +227,7 @@ impl HTTPClient {
             .form(form)
             .build()?;
 
-        self.execute(http_request).await
+        self.execute_v0(http_request).await
     }
 
     /// Make a DELETE request to {path} and deserialize the response body
@@ -211,11 +261,11 @@ impl HTTPClient {
         }
         let http_request = http_request_builder.build()?;
 
-        self.execute(http_request).await
+        self.execute_v0(http_request).await
     }
 
     // Execute an HTTP request asynchronously
-    async fn execute<Model>(&self, request: Request) -> Result<KiteApiResponse<Model>>
+    async fn execute_v0<Model>(&self, request: Request) -> Result<KiteApiResponse<Model>>
     where
         Model: DeserializeOwned,
     {
@@ -233,5 +283,78 @@ impl HTTPClient {
             }
             Err(err) => Err(err.into()),
         }
+    }
+
+    // TODO: Complete.
+    /// Execute a HTTP request asynchronously with backoff
+    async fn execute<Model, RB, Fut>(&self, request_baker: RB) -> Result<KiteApiResponse<Model>>
+    where
+        Model: DeserializeOwned,
+        RB: Fn() -> Fut,
+        Fut: Future<Output = Result<(reqwest::Request, Duration)>>,
+    {
+        let (json_response, status) = self.execute_raw::<RB, Fut>(request_baker).await?;
+
+        let model: KiteApiResponse<Model> = serde_json::from_str(&json_response)
+            .map_err(|e| map_deserialization_error(e, &json_response))?;
+
+        Ok(model)
+    }
+
+    /// Execute a HTTP request asynchronously with backoff
+    async fn execute_raw<RB, Fut>(&self, request_baker: RB) -> Result<(String, StatusCode)>
+    where
+        RB: Fn() -> Fut,
+        Fut: Future<Output = Result<(reqwest::Request, Duration)>>,
+    {
+        let client = self.http_client();
+        // The magic sauce.
+        backoff::future::retry(self.backoff.clone(), || async {
+            // Bake a fresh request with rate limit
+            let (request, retry_after) =
+                request_baker().await.map_err(backoff::Error::Permanent)?;
+            let path = request.url().path().to_string();
+            // Execute the HTTP request against some KiteConnect API endpoint
+            let response = client
+                .execute(request)
+                .await
+                .map_err(ManjaError::Reqwest)
+                .map_err(backoff::Error::Permanent)?;
+            let status = response.status();
+            // Attempt to fetch the string (JSON) response
+            let json_response = response
+                .text()
+                .await
+                .map_err(ManjaError::Reqwest)
+                .map_err(backoff::Error::Permanent)?;
+            if !status.is_success() {
+                // Attempt to JSON deserialize the KiteConnect API response
+                let kite_response: KiteApiResponse<Option<String>> =
+                    serde_json::from_str(&json_response)
+                        .map_err(|e| map_deserialization_error(e, &json_response))
+                        .map_err(backoff::Error::Permanent)?;
+                let kite_error = KiteApiError {
+                    endpoint: path.clone(),
+                    status_code: status.as_u16(),
+                    message: kite_response.message,
+                    error_type: kite_response
+                        .error_type
+                        .and_then(|error_type| Some(KiteApiException::from(error_type.as_str())))
+                        // This unwrap is safe since From<&str> is implemented for `KiteApiException`.
+                        .unwrap(),
+                };
+                // Check if rate limit was exceeded on the endpoint
+                if status.as_u16() == 429 {
+                    tracing::warn!("Rate limited at endpoint: {}", path);
+                    return Err(backoff::Error::Transient {
+                        err: ManjaError::KiteApiError(kite_error),
+                        retry_after: Some(retry_after),
+                    });
+                }
+            }
+
+            Ok((json_response, status))
+        })
+        .await
     }
 }
