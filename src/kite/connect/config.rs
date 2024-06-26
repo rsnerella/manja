@@ -14,14 +14,6 @@ pub const KITECONNECT_API_LOGIN: &str = "https://kite.trade/connect/login";
 /// Default KiteConnect redirect url
 pub const KITECONNECT_API_REDIRECT: &str = "https://127.0.0.1/kite-redirect?";
 
-/// `manja::kite::connect::Client` uses this trait for every REST API call on
-/// KiteConnect
-// pub trait Config {
-//     fn headers(&self, access_token: Option<Secret<String>>) -> HeaderMap;
-//     fn url(&self, path: &str) -> String;
-//     fn query(&self) -> Vec<(&str, &str)>;
-// }
-
 /// KiteConnect client configurations
 #[derive(Clone, Debug)]
 pub struct Config {

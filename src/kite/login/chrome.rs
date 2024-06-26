@@ -1,10 +1,43 @@
 use crate::kite::error::Result;
 use crate::kite::login::BrowserClient;
+
 use serde_json::Map;
 use std::env;
 
 type WebDriverProcess = tokio::process::Child;
 
+/// Launches a Chrome browser instance using WebDriver.
+///
+/// This function reads the paths for the Chrome binary and Chromedriver from
+/// the environment variables `CHROME_BINARY_PATH` and `CHROMEDRIVER_PATH`
+/// respectively. It then starts the Chromedriver on port 9515 and connects to it.
+///
+/// # Returns
+///
+/// A tuple containing:
+/// - `BrowserClient`: The client to interact with the browser.
+/// - `WebDriverProcess`: The process handle for the Chromedriver.
+///
+/// # Errors
+///
+/// This function will return an error if:
+/// - The environment variables `CHROME_BINARY_PATH` or `CHROMEDRIVER_PATH` are not set.
+/// - The Chromedriver fails to start.
+/// - The connection to the WebDriver fails.
+///
+/// # Example
+///
+/// ```
+/// # tokio_test::block_on(async {
+/// use crate::browser::launch_browser;
+///
+/// let (client, driver_process) = launch_browser().await.unwrap();
+/// // Use the client to interact with the browser
+/// // ...
+/// // Don't forget to terminate the driver process when done
+/// driver_process.kill().await.unwrap();
+/// # });
+/// ```
 pub async fn launch_browser() -> Result<(BrowserClient, WebDriverProcess)> {
     let chrome_binary_path = env::var("CHROME_BINARY_PATH")?;
     let chromedriver_path = env::var("CHROMEDRIVER_PATH")?;

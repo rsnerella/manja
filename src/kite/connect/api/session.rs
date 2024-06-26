@@ -19,11 +19,15 @@ use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
 
+use backoff::ExponentialBackoff;
 use secrecy::ExposeSecret;
 
-use crate::kite::connect::models::UserSession;
-use crate::kite::connect::utils::create_checksum;
-use crate::kite::connect::{client::HTTPClient, models::KiteApiResponse};
+use crate::kite::connect::{
+    api::create_backoff_policy,
+    client::HTTPClient,
+    models::{KiteApiResponse, UserSession},
+    utils::create_checksum,
+};
 use crate::kite::error::Result;
 use crate::kite::traits::{KiteConfig, KiteLoginFlow};
 
@@ -38,6 +42,8 @@ pub struct Session<'c> {
     /// A mutable reference to the HTTP client used for making API requests
     /// and storing a `UserSession` object after a successful login flow.
     pub client: &'c mut HTTPClient,
+    /// Backoff policy for retrying API requests.
+    backoff: ExponentialBackoff,
 }
 
 impl<'c> KiteLoginFlow for Session<'c> {
@@ -95,7 +101,25 @@ impl<'c> Session<'c> {
     /// let session = Session::new(&mut client);
     /// ```
     pub fn new(client: &'c mut HTTPClient) -> Self {
-        Self { client }
+        Self {
+            client,
+            // Default API rate limit
+            backoff: create_backoff_policy(10),
+        }
+    }
+
+    /// Sets a custom backoff policy for the `Session` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `backoff` - An `ExponentialBackoff` instance specifying the backoff policy.
+    ///
+    /// # Returns
+    ///
+    /// The `User` instance with the updated backoff policy.
+    pub fn with_backoff(mut self, backoff: ExponentialBackoff) -> Self {
+        self.backoff = backoff;
+        self
     }
 
     /// Generates a session using a `request token`.
@@ -144,8 +168,10 @@ impl<'c> Session<'c> {
         params.insert("request_token", request_token);
         params.insert("checksum", checksum.as_str());
         // info!("Params: {:?}", params);
-        let kite_response: Result<KiteApiResponse<UserSession>> =
-            self.client.post_form("/session/token", &params).await;
+        let kite_response: Result<KiteApiResponse<UserSession>> = self
+            .client
+            .post_form("/session/token", &params, &self.backoff)
+            .await;
         match kite_response {
             Ok(kite_response) => {
                 // Set the UserSession object on HTTPClient
@@ -164,7 +190,11 @@ impl<'c> Session<'c> {
     ///
     /// This is useful for logging out a user or resetting their session for security reasons.
     pub async fn delete_session(&mut self) -> Result<KiteApiResponse<bool>> {
-        match self.client.delete("/session/token", true).await {
+        match self
+            .client
+            .delete("/session/token", true, &self.backoff)
+            .await
+        {
             Ok(kite_response) => {
                 // Remove the UserSession object from the HTTPClient
                 self.client.set_user_session(None);
