@@ -15,6 +15,14 @@ pub use user::User;
 mod orders;
 pub use orders::Orders;
 
+// `/portfolio/` API group
+mod portfolio;
+pub use portfolio::Portfolio;
+
+// `/instruments/` and `/quote/` API group
+mod market;
+pub use market::Market;
+
 /// Creates an ExponentialBackoff policy with a specified rate limit.
 fn create_backoff_policy(rate_limit_per_second: u64) -> ExponentialBackoff {
     // Calculate the minimum duration between requests

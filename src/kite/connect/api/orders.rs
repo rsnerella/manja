@@ -1,10 +1,9 @@
 use backoff::ExponentialBackoff;
 
 use crate::kite::connect::api::create_backoff_policy;
-use crate::kite::connect::models::OrderReceipt;
 use crate::kite::connect::{
     client::HTTPClient,
-    models::{KiteApiResponse, Order, Trade},
+    models::{KiteApiResponse, Order, OrderReceipt, Trade},
 };
 use crate::kite::error::Result;
 
@@ -47,9 +46,8 @@ impl<'c> Orders<'c> {
         self
     }
 
-    // KiteConnect API endpoints
+    // ===== [ KiteConnect API endpoints ] =====
 
-    // POST
     pub async fn place_order(&self, order: &Order) -> Result<KiteApiResponse<OrderReceipt>> {
         self.client
             .post(&format!("/orders/{}", order.variety), order, &self.backoff)

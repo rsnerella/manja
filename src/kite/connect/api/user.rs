@@ -59,6 +59,8 @@ impl<'c> User<'c> {
         self
     }
 
+    // ===== [ KiteConnect API endpoints ] =====
+
     /// Fetch the user profile from the API endpoint: `/user/profile`.
     ///
     /// This method retrieves the user's profile information.

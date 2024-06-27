@@ -1,8 +1,12 @@
+use std::fmt;
+
+use serde::{Deserialize, Serialize};
+
 /// Exchange options.
 ///
 /// This enum represents various exchange options available for trading.
 /// Each variant corresponds to a specific exchange or market segment.
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub enum Exchange {
     /// National Stock Exchange
     #[default]
@@ -140,5 +144,22 @@ impl From<Exchange> for &str {
             Exchange::MCXSX => "MCXSX",
             Exchange::INDICES => "INDICES",
         }
+    }
+}
+
+impl fmt::Display for Exchange {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let display_str = match self {
+            Exchange::NSE => "NSE",
+            Exchange::NFO => "NFO",
+            Exchange::CDS => "CDS",
+            Exchange::BSE => "BSE",
+            Exchange::BFO => "BFO",
+            Exchange::BCD => "BCD",
+            Exchange::MCX => "MCX",
+            Exchange::MCXSX => "MCXSX",
+            Exchange::INDICES => "INDICES",
+        };
+        write!(f, "{}", display_str)
     }
 }

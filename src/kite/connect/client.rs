@@ -32,21 +32,19 @@ use core::future::Future;
 use std::time::Duration;
 
 use backoff::ExponentialBackoff;
-use reqwest::{Request, StatusCode};
+// use reqwest::{Request, StatusCode};
 use secrecy::{ExposeSecret, Secret};
 use serde::{de::DeserializeOwned, Serialize};
 
 use crate::kite::{
     connect::{
-        api::{Session, User},
+        api::{Market, Orders, Session, User},
         config::Config,
         models::{KiteApiResponse, UserSession},
     },
     error::{map_deserialization_error, KiteApiError, KiteApiException, ManjaError, Result},
     traits::KiteConfig,
 };
-
-use super::api::Orders;
 
 /// An asynchronous Kite Connect client to make HTTP requests with.
 ///
@@ -155,7 +153,26 @@ impl HTTPClient {
         Orders::new(self)
     }
 
+    /// To call [Market] related APIs using this client.
+    pub fn market(&mut self) -> Market {
+        Market::new(self)
+    }
+
     // --- [ HTTP verb functions ] ---
+
+    /// Make a GET request to {path} and return the response body
+    pub(crate) async fn get_raw(&self, path: &str, backoff: &ExponentialBackoff) -> Result<String> {
+        let request_baker = || async {
+            Ok(self
+                .client
+                .get(self.config.url(path))
+                // Fetch access token for protected endpoints, if available
+                .headers(self.config.headers(self.get_access_token()))
+                .build()?)
+        };
+
+        self.execute_raw(backoff, request_baker).await
+    }
 
     /// Make a GET request to {path} and deserialize the response body
     pub(crate) async fn get<Model>(
@@ -170,6 +187,30 @@ impl HTTPClient {
             Ok(self
                 .client
                 .get(self.config.url(path))
+                // Fetch access token for protected endpoints, if available
+                .headers(self.config.headers(self.get_access_token()))
+                .build()?)
+        };
+
+        self.execute(backoff, request_baker).await
+    }
+
+    /// Make a GET request to {path} with given Query and deserialize the response body
+    pub(crate) async fn get_with_query<Q, Model>(
+        &self,
+        path: &str,
+        query: &Q,
+        backoff: &ExponentialBackoff,
+    ) -> Result<KiteApiResponse<Model>>
+    where
+        Q: Serialize + ?Sized,
+        Model: DeserializeOwned,
+    {
+        let request_baker = || async {
+            Ok(self
+                .client
+                .get(self.config.url(path))
+                .query(query)
                 // Fetch access token for protected endpoints, if available
                 .headers(self.config.headers(self.get_access_token()))
                 .build()?)

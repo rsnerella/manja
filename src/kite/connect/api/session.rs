@@ -122,6 +122,8 @@ impl<'c> Session<'c> {
         self
     }
 
+    // ===== [ KiteConnect API endpoints ] =====
+
     /// Generates a session using a `request token`.
     ///
     /// This method completes the second step of the
