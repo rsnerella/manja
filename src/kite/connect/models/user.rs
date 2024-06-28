@@ -4,7 +4,7 @@ use std::fmt;
 // Models for the `/user/profile` endpoint ------------------------------------
 
 /// Kite API response from the endpoint: `/user/profile`
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct UserProfile {
     /// The unique, permanent user id registered with the broker and the exchanges
     user_id: String,
@@ -31,7 +31,7 @@ pub struct UserProfile {
 }
 
 /// Additional metadata
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Meta {
     /// Demat consent: empty, consent or physical
     demat_consent: String,
@@ -40,7 +40,7 @@ pub struct Meta {
 // Models for the `/user/margins` endpoint ------------------------------------
 
 /// Kite API response from the endpoint: `/user/margins`
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct UserMargins {
     /// Equity segment details
     pub equity: Option<Segment>,
@@ -49,7 +49,7 @@ pub struct UserMargins {
 }
 
 /// Segment details
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Segment {
     /// Indicates whether the segment is enabled for the user
     pub enabled: bool,
@@ -63,7 +63,7 @@ pub struct Segment {
 }
 
 /// Available balance details
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Available {
     /// Raw cash balance in the account available for trading (also includes
     /// `intraday_payin`)
@@ -81,7 +81,7 @@ pub struct Available {
 }
 
 /// Utilized balance details
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Utilised {
     /// Sum of all utilised margins
     /// (unrealised M2M + realised M2M + SPAN + Exposure + Premium + Holding sales)
@@ -111,6 +111,7 @@ pub struct Utilised {
     pub delivery: f64,
 }
 
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum SegmentKind {
     Commodity,
     Equity,

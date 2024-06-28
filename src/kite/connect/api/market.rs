@@ -131,3 +131,35 @@ impl<'c> Market<'c> {
             .await
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     use tokio::fs;
+//     use tokio_test::block_on;
+
+//     async fn read_file(path: &str) -> Result<String> {
+//         // Read the file contents into a string
+//         Ok(fs::read_to_string(path).await?)
+//     }
+
+//     #[test]
+//     fn test_get_quotes_full() {
+//         let json_response = block_on(read_file("./kiteconnect-mocks/ticker_full.json")).unwrap();
+
+//         // Request a new server from the pool
+//         let mut server = mockito::Server::new();
+
+//         let _m = server
+//             .mock("GET", "/quote")
+//             .with_status(200)
+//             .with_header("content-type", "application/json")
+//             .with_body(json_response)
+//             .create();
+
+//         // let client = get_client();
+//         // let response = block_on(client.fetch_message("message")).unwrap();
+
+//         // assert_eq!(response.message, "Hello, world!");
+//     }
+// }

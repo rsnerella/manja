@@ -116,3 +116,95 @@ impl<'c> User<'c> {
             .await
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+
+    use mockito::ServerGuard;
+    use tokio::join;
+
+    use crate::kite::connect::client::test_utils::{
+        add_mocks, get_manja_test_client, read_to_object, APIEndpoint, HTTPMethod, TestResponse,
+    };
+
+    use super::*;
+
+    fn mock_map() -> HashMap<(HTTPMethod, APIEndpoint), TestResponse> {
+        let mut mmap = HashMap::new();
+        mmap.insert(
+            ("GET", "/user/profile"),
+            "./kiteconnect-mocks/api_docs/user_profile.json",
+        );
+        mmap.insert(
+            ("GET", "/user/margins"),
+            "./kiteconnect-mocks/api_docs/user_margins.json",
+        );
+        mmap.insert(
+            ("GET", "/user/margins/commodity"),
+            "./kiteconnect-mocks/margin_commodity.json",
+        );
+        mmap.insert(
+            ("GET", "/user/margins/equity"),
+            "./kiteconnect-mocks/margins_equity.json",
+        );
+        mmap
+    }
+
+    #[tokio::test]
+    async fn test_user_profile() {
+        let (server, manja_client) = get_manja_test_client().await;
+        let (_server,) = join!(add_mocks(server, mock_map()));
+
+        let response = manja_client.user().profile().await.unwrap();
+        let profile =
+            read_to_object::<UserProfile>("./kiteconnect-mocks/api_docs/user_profile.json")
+                .unwrap();
+        log::debug!("Profile object: {:?}", profile);
+        assert_eq!(response.data.unwrap(), profile);
+    }
+
+    #[tokio::test]
+    async fn test_user_margins() {
+        let (server, manja_client) = get_manja_test_client().await;
+        let (_server,) = join!(add_mocks(server, mock_map()));
+
+        let response = manja_client.user().margins().await.unwrap();
+        let margins =
+            read_to_object::<UserMargins>("./kiteconnect-mocks/api_docs/user_margins.json")
+                .unwrap();
+        log::debug!("Margins object: {:?}", margins);
+        assert_eq!(response.data.unwrap(), margins);
+    }
+
+    #[tokio::test]
+    async fn test_user_margins_commodity_segment() {
+        let (server, manja_client) = get_manja_test_client().await;
+        let (_server,) = join!(add_mocks(server, mock_map()));
+
+        let response = manja_client
+            .user()
+            .margins_by_segment(SegmentKind::Commodity)
+            .await
+            .unwrap();
+        let segment =
+            read_to_object::<Segment>("./kiteconnect-mocks/margin_commodity.json").unwrap();
+        log::debug!("Segment object: {:?}", segment);
+        assert_eq!(response.data.unwrap(), segment);
+    }
+
+    #[tokio::test]
+    async fn test_user_margins_equity_segment() {
+        let (server, manja_client) = get_manja_test_client().await;
+        let (_server,) = join!(add_mocks(server, mock_map()));
+
+        let response = manja_client
+            .user()
+            .margins_by_segment(SegmentKind::Equity)
+            .await
+            .unwrap();
+        let segment = read_to_object::<Segment>("./kiteconnect-mocks/margins_equity.json").unwrap();
+        log::debug!("Segment object: {:?}", segment);
+        assert_eq!(response.data.unwrap(), segment);
+    }
+}

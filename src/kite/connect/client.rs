@@ -406,3 +406,57 @@ impl HTTPClient {
         .await
     }
 }
+
+#[cfg(test)]
+pub mod test_utils {
+    use std::collections::HashMap;
+
+    use super::*;
+
+    use mockito::{Mock, ServerGuard};
+
+    pub fn read_to_object<M>(path: &str) -> Result<M>
+    where
+        M: DeserializeOwned,
+    {
+        let contents = std::fs::read_to_string(path).unwrap();
+        let obj: KiteApiResponse<M> = serde_json::from_str(&contents)?;
+        obj.data
+            .ok_or(ManjaError::Internal(format!("obj not found")))
+    }
+
+    pub type HTTPMethod = &'static str;
+    pub type APIEndpoint = &'static str;
+    pub type TestResponse = &'static str;
+
+    pub async fn add_mocks(
+        mut server: ServerGuard,
+        mock_map: HashMap<(HTTPMethod, APIEndpoint), TestResponse>,
+    ) -> ServerGuard {
+        let mut mocks = Vec::new();
+        for ((method, api_endpoint), response_path) in mock_map {
+            let response_json = std::fs::read_to_string(response_path).unwrap();
+            let m = server
+                .mock(method, api_endpoint)
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(response_json)
+                .create_async();
+            mocks.push(m)
+        }
+        let _ms = futures::future::join_all(mocks).await;
+        server
+    }
+
+    pub async fn get_manja_test_client() -> (ServerGuard, HTTPClient) {
+        let server = mockito::Server::new_async().await;
+        // Load env vars
+        dotenv::dotenv().ok();
+        // Patch the API base url on HTTPClient for testing
+        std::env::set_var("KITECONNECT_API_BASE", &server.url());
+        let session =
+            read_to_object::<UserSession>("./kiteconnect-mocks/generate_session.json").unwrap();
+
+        (server, HTTPClient::default().with_user_session(session))
+    }
+}
