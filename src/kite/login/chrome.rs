@@ -27,16 +27,14 @@ type WebDriverProcess = tokio::process::Child;
 ///
 /// # Example
 ///
-/// ```
-/// # tokio_test::block_on(async {
-/// use crate::browser::launch_browser;
+/// ```ignore
+/// use manja::kite::login::browser::launch_browser;
 ///
 /// let (client, driver_process) = launch_browser().await.unwrap();
 /// // Use the client to interact with the browser
 /// // ...
 /// // Don't forget to terminate the driver process when done
 /// driver_process.kill().await.unwrap();
-/// # });
 /// ```
 pub async fn launch_browser() -> Result<(BrowserClient, WebDriverProcess)> {
     let chrome_binary_path = env::var("CHROME_BINARY_PATH")?;

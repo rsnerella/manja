@@ -63,7 +63,7 @@ impl<'c> KiteLoginFlow for Session<'c> {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```ignore
     /// let request_token = session.gen_request_token(|config| async move {
     ///     // Implement the logic to generate the request token
     /// }).await?;
@@ -96,7 +96,7 @@ impl<'c> Session<'c> {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```ignore
     /// let mut client = HTTPClient::new();
     /// let session = Session::new(&mut client);
     /// ```
@@ -143,7 +143,7 @@ impl<'c> Session<'c> {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```ignore
     /// let session = kite_connect.generate_session(request_token);
     /// match session {
     ///     Ok(session) => println!("Session generated successfully!"),

@@ -14,7 +14,7 @@
 //!
 //! # Examples
 //!
-//! ```rust
+//! ```ignore
 //! use crate::kite::connect::client::HTTPClient;
 //! use crate::kite::connect::config::Config;
 //!

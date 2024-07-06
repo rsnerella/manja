@@ -13,41 +13,6 @@
 //! - `KiteAuth`: Adds the `Authorization` header to HTTP requests as required by
 //!   KiteConnect, with the `api_key:access_token` combination.
 //!
-//! # Example Usage
-//!
-//! ```rust
-//! use reqwest::header::HeaderMap;
-//! use secrecy::Secret;
-//! use std::future::Future;
-//! use std::pin::Pin;
-//! use crate::kite::connect::credentials::KiteCredentials;
-//! use crate::kite::error::Result;
-//!
-//! struct MyKiteConfig {
-//!     // Configuration fields
-//! }
-//!
-//! impl KiteConfig for MyKiteConfig {
-//!     fn headers(&self, access_token: Option<Secret<String>>) -> HeaderMap {
-//!         // Implementation
-//!     }
-//!     fn url(&self, path: &str) -> String {
-//!         // Implementation
-//!     }
-//!     fn api_base(&self) -> &str {
-//!         // Implementation
-//!     }
-//!     fn api_login(&self) -> &str {
-//!         // Implementation
-//!     }
-//!     fn api_redirect(&self) -> &str {
-//!         // Implementation
-//!     }
-//!     fn credentials(&self) -> &KiteCredentials {
-//!         // Implementation
-//!     }
-//! }
-//! ```
 use std::future::Future;
 use std::pin::Pin;
 

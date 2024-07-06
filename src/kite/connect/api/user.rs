@@ -167,6 +167,8 @@ mod tests {
     #[tokio::test]
     async fn test_user_margins() {
         let (server, manja_client) = get_manja_test_client().await;
+        let server_ptr: *const ServerGuard = &server;
+        log::debug!("Server @address: {:p}", server_ptr);
         let (_server,) = join!(add_mocks(server, mock_map()));
 
         let response = manja_client.user().margins().await.unwrap();

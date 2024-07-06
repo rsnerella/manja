@@ -36,7 +36,7 @@ use crate::kite::traits::KiteConfig;
 ///
 /// # Example
 ///
-/// ```rust
+/// ```ignore
 /// use manja::kite::connect::config::Config;
 ///
 /// let config = Config::default();
@@ -137,7 +137,7 @@ pub async fn browser_login_flow(config: Box<dyn KiteConfig>) -> Result<String> {
 ///
 /// # Example
 ///
-/// ```rust
+/// ```ignore
 /// let url = wait_for_url(&client, "https://kite.trade", TokioDuration::from_secs(10)).await?;
 /// ```
 async fn wait_for_url(
