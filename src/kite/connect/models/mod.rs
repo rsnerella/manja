@@ -21,6 +21,9 @@ pub use user::{Available, Segment, SegmentKind, UserMargins, UserProfile, Utilis
 mod order;
 mod order_enums;
 pub use order::{Order, OrderReceipt, Trade};
+pub use order_enums::{
+    OrderStatus, OrderType, OrderValidity, OrderVariety, ProductType, TransactionType,
+};
 
 // Models for the `/portfolio/` API group
 mod portfolio;
@@ -30,6 +33,13 @@ pub use portfolio::{Auction, Holding, Position, PositionConversionRequest};
 mod market;
 pub(crate) use market::KiteQuote;
 pub use market::{FullQuote, Instrument, LTPQuote, OHLCQuote, QuoteMode};
+
+// Models for the `/margins/` and `/charges/` API group
+mod margins;
+pub(crate) use margins::{
+    BasketMargin, Charges, OrderCharges, OrderChargesRequest, OrderMargin, OrderMarginRequest, GST,
+    PNL,
+};
 
 // Enums for `exchange`
 mod exchange;

@@ -1,15 +1,17 @@
 use std::fmt;
 
-use serde::{Deserialize, Serialize};
+use serde::de::{self, Visitor};
+use serde::{Deserialize, Deserializer, Serialize};
 
 /// Exchange options.
 ///
 /// This enum represents various exchange options available for trading.
 /// Each variant corresponds to a specific exchange or market segment.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize)]
 pub enum Exchange {
-    /// National Stock Exchange
     #[default]
+    NONE,
+    /// National Stock Exchange
     NSE,
     /// National Futures and Options
     NFO,
@@ -56,6 +58,7 @@ impl Exchange {
     /// A `bool` indicating if the exchange is tradable.
     pub(crate) fn is_tradable(&self) -> bool {
         match self {
+            Self::NONE => false,
             Self::INDICES => false,
             _ => true,
         }
@@ -86,7 +89,7 @@ impl From<usize> for Exchange {
             3 => Self::CDS,
             2 => Self::NFO,
             1 => Self::NSE,
-            _ => Self::NSE,
+            _ => Self::NONE,
         }
     }
 }
@@ -115,7 +118,8 @@ impl From<&str> for Exchange {
             "MCX" => Self::MCX,
             "MCXSX" => Self::MCXSX,
             "INDICES" => Self::INDICES,
-            _ => Self::NSE,
+            "" => Self::NONE,
+            _ => Self::NONE,
         }
     }
 }
@@ -143,6 +147,7 @@ impl From<Exchange> for &str {
             Exchange::MCX => "MCX",
             Exchange::MCXSX => "MCXSX",
             Exchange::INDICES => "INDICES",
+            Exchange::NONE => "",
         }
     }
 }
@@ -159,7 +164,46 @@ impl fmt::Display for Exchange {
             Exchange::MCX => "MCX",
             Exchange::MCXSX => "MCXSX",
             Exchange::INDICES => "INDICES",
+            Exchange::NONE => "",
         };
         write!(f, "{}", display_str)
+    }
+}
+
+impl<'de> Deserialize<'de> for Exchange {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct ExchangeVisitor;
+
+        impl<'de> Visitor<'de> for ExchangeVisitor {
+            type Value = Exchange;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("a valid exchange string")
+            }
+
+            fn visit_str<E>(self, value: &str) -> Result<Exchange, E>
+            where
+                E: de::Error,
+            {
+                Ok(match value {
+                    "" => Exchange::NONE,
+                    "NSE" => Exchange::NSE,
+                    "NFO" => Exchange::NFO,
+                    "CDS" => Exchange::CDS,
+                    "BSE" => Exchange::BSE,
+                    "BFO" => Exchange::BFO,
+                    "BCD" => Exchange::BCD,
+                    "MCX" => Exchange::MCX,
+                    "MCXSX" => Exchange::MCXSX,
+                    "INDICES" => Exchange::INDICES,
+                    _ => Exchange::NONE,
+                })
+            }
+        }
+
+        deserializer.deserialize_str(ExchangeVisitor)
     }
 }

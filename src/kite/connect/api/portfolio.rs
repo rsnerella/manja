@@ -7,15 +7,10 @@ use crate::kite::connect::{
 };
 use crate::kite::error::Result;
 
-/// ## Exiting holdings and positions
+/// A user's portfolio consists of long term equity holdings and short term
+/// positions. The portfolio APIs return instruments in a portfolio with
+/// up-to-date profit and loss computations.
 ///
-/// There are no special API calls for exiting instruments from holdings and
-/// positions portfolios. The way to do it is to place an opposite `BUY` or
-/// `SELL` order depending on whether the position is a long or a short
-/// (`MARKET` order for an immediate exit). It is important to note that the
-/// exit order should carry the same product as the existing position. If the
-/// exit order is of a different margin product, it may be treated as a new
-/// position in the portfolio.
 pub struct Portfolio<'c> {
     /// Reference to the HTTP client used for making API requests.
     pub client: &'c HTTPClient,
@@ -24,7 +19,7 @@ pub struct Portfolio<'c> {
 }
 
 impl<'c> Portfolio<'c> {
-    /// Creates a new instance of `Orders` with default API rate limits.
+    /// Creates a new instance of `Portfolio` with default API rate limits.
     ///
     /// # Arguments
     ///
@@ -32,7 +27,8 @@ impl<'c> Portfolio<'c> {
     ///
     /// # Returns
     ///
-    /// A new instance of `Orders`.
+    /// A new instance of `Portfolio`.
+    ///
     pub fn new(client: &'c HTTPClient) -> Self {
         Self {
             client,
@@ -41,7 +37,7 @@ impl<'c> Portfolio<'c> {
         }
     }
 
-    /// Sets a custom backoff policy for the `Orders` instance.
+    /// Sets a custom backoff policy for the `Portfolio` instance.
     ///
     /// # Arguments
     ///
@@ -49,7 +45,8 @@ impl<'c> Portfolio<'c> {
     ///
     /// # Returns
     ///
-    /// The `Orders` instance with the updated backoff policy.
+    /// The `Portfolio` instance with the updated backoff policy.
+    ///
     pub fn with_backoff(mut self, backoff: ExponentialBackoff) -> Self {
         self.backoff = backoff;
         self
@@ -57,20 +54,21 @@ impl<'c> Portfolio<'c> {
 
     // ===== [ KiteConnect API endpoints ] =====
 
-    /// Retrieve the list of long term equity holdings
+    /// Retrieve the list of long term equity holdings.
     ///
     /// Holdings contain the user's portfolio of long term equity delivery
     /// stocks. An instrument in a holdings portfolio remains there
     /// indefinitely until its sold or is delisted or changed by the exchanges.
     /// Underneath it all, instruments in the holdings reside in the user's
     /// DEMAT account, as settled by exchanges and clearing institutions.
+    ///
     pub async fn get_holdings(&self) -> Result<KiteApiResponse<Vec<Holding>>> {
         self.client
             .get(&format!("/portfolio/holdings"), &self.backoff)
             .await
     }
 
-    /// Retrieve the list of short term positions
+    /// Retrieve the list of short term positions.
     ///
     /// Positions contain the user's portfolio of short to medium term derivatives
     /// (futures and options contracts) and intraday equity stocks. Instruments
@@ -82,32 +80,35 @@ impl<'c> Portfolio<'c> {
     /// is the actual, current net position portfolio, while `day` is a snapshot
     /// of the buying and selling activity for that particular day. This is
     /// useful for computing intraday profits and losses for trading strategies.
+    ///
     pub async fn get_positions(&self) -> Result<KiteApiResponse<Vec<Position>>> {
         self.client
             .get(&format!("/portfolio/positions"), &self.backoff)
             .await
     }
 
-    /// Retrieve the list of auctions that are currently being held
+    /// Retrieve the list of auctions that are currently being held.
     ///
     /// This API returns a list of auctions that are currently being held,
     /// along with details about each auction such as the auction number,
     /// the security being auctioned, the last price of the security, and
     /// the quantity of the security being offered. Only the stocks that
     /// you hold in your demat account will be shown in the auctions list.
+    ///
     pub async fn get_auctions(&self) -> Result<KiteApiResponse<Vec<Auction>>> {
         self.client
             .get(&format!("/portfolio/holdings/auctions"), &self.backoff)
             .await
     }
 
-    /// Convert the margin product of an open position
+    /// Convert the margin product of an open position.
     ///
     /// All positions held are of specific margin products such as NRML, MIS
     /// etc. A position can have one and only one margin product. These
     /// products affect how the user's margin usage and free cash values are
     /// computed, and a user may want to covert or change a position's margin
     /// product from time to time. More on [margin policies](https://zerodha.com/z-connect/general/zerodha-margin-policies).
+    ///
     pub async fn convert_position(
         &self,
         request: PositionConversionRequest,
