@@ -38,7 +38,7 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use crate::kite::{
     connect::{
-        api::{Market, Orders, Session, User},
+        api::{Charges, Margins, Market, Orders, Session, User},
         config::Config,
         models::{KiteApiResponse, UserSession},
     },
@@ -156,6 +156,16 @@ impl HTTPClient {
     /// To call [Market] related APIs using this client.
     pub fn market(&mut self) -> Market {
         Market::new(self)
+    }
+
+    /// To call [Market] related APIs using this client.
+    pub fn margins(&mut self) -> Margins {
+        Margins::new(self)
+    }
+
+    /// To call [Market] related APIs using this client.
+    pub fn charges(&mut self) -> Charges {
+        Charges::new(self)
     }
 
     // --- [ HTTP verb functions ] ---

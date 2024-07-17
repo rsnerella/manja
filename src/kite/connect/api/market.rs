@@ -9,6 +9,11 @@ use crate::kite::error::{ManjaError, Result};
 
 use backoff::ExponentialBackoff;
 
+/// The market quotes APIs enable you to retrieve market data snapshots of
+/// various instruments, including the security master. Market data snapshots
+/// are gathered from the exchanges at the time of the request. Use the
+/// WebSocket API for realtime streaming market quotes.
+///
 pub struct Market<'c> {
     /// Reference to the HTTP client used for making API requests.
     pub client: &'c HTTPClient,
@@ -25,7 +30,7 @@ impl<'c> Market<'c> {
     ///
     /// # Returns
     ///
-    /// A new instance of `Orders`.
+    /// A new instance of `Market`.
     pub fn new(client: &'c HTTPClient) -> Self {
         Self {
             client,
@@ -34,7 +39,7 @@ impl<'c> Market<'c> {
         }
     }
 
-    /// Sets a custom backoff policy for the `Orders` instance.
+    /// Sets a custom backoff policy for the `Market` instance.
     ///
     /// # Arguments
     ///
@@ -42,7 +47,7 @@ impl<'c> Market<'c> {
     ///
     /// # Returns
     ///
-    /// The `Orders` instance with the updated backoff policy.
+    /// The `Market` instance with the updated backoff policy.
     pub fn with_backoff(mut self, backoff: ExponentialBackoff) -> Self {
         self.backoff = backoff;
         self
@@ -66,7 +71,7 @@ impl<'c> Market<'c> {
 
     // ===== [ KiteConnect API endpoints ] =====
 
-    /// Retrieve the CSV dump of all tradable instruments on an exchange
+    /// Retrieve the CSV dump of all tradable instruments on an exchange.
     ///
     /// The instrument list API returns a gzipped CSV dump of instruments across
     /// all exchanges (if not specified) that can be imported into a database.
@@ -76,7 +81,7 @@ impl<'c> Market<'c> {
         self.client.get_raw(&path, &self.backoff).await
     }
 
-    /// Retrieve all tradable instruments
+    /// Retrieve all tradable instruments.
     ///
     /// The instruments API provides a vector of instruments available for
     /// trading.
@@ -89,7 +94,7 @@ impl<'c> Market<'c> {
         Market::parse_instruments(&instruments)
     }
 
-    /// Retrieve all tradable instruments from a particular exchange
+    /// Retrieve all tradable instruments from a particular exchange.
     ///
     /// The instruments API provides a vector of instruments available for trading.
     pub async fn get_instruments(&self, exchange: Exchange) -> Result<Vec<Instrument>> {
@@ -97,7 +102,7 @@ impl<'c> Market<'c> {
         Market::parse_instruments(&instruments)
     }
 
-    /// Retrieve market quotes for one or more instruments
+    /// Retrieve market quotes for one or more instruments.
     ///
     /// Sample usage:
     /// ```ignore
