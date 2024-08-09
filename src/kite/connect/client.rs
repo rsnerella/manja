@@ -152,37 +152,37 @@ impl HTTPClient {
 
     /// To call [User] related APIs using this client.
     ///
-    pub fn user(&self) -> User {
+    pub fn user(&self) -> User<'_> {
         User::new(self)
     }
 
     /// To call [Session] related APIs using this client.
     ///
-    pub fn session(&mut self) -> Session {
+    pub fn session(&mut self) -> Session<'_> {
         Session::new(self)
     }
 
     /// To call [Orders] related APIs using this client.
     ///
-    pub fn orders(&mut self) -> Orders {
+    pub fn orders(&mut self) -> Orders<'_> {
         Orders::new(self)
     }
 
     /// To call [Market] related APIs using this client.
     ///
-    pub fn market(&mut self) -> Market {
+    pub fn market(&mut self) -> Market<'_> {
         Market::new(self)
     }
 
     /// To call [Market] related APIs using this client.
     ///
-    pub fn margins(&mut self) -> Margins {
+    pub fn margins(&mut self) -> Margins<'_> {
         Margins::new(self)
     }
 
     /// To call [Market] related APIs using this client.
     ///
-    pub fn charges(&mut self) -> Charges {
+    pub fn charges(&mut self) -> Charges<'_> {
         Charges::new(self)
     }
 

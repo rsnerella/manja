@@ -129,7 +129,7 @@ pub trait KiteAuth {
     /// * `api_key` - The API key for Kite Connect.
     /// * `access_token` - The access token obtained after login.
     ///
-    fn add_auth_header(&mut self, api_key: String, access_token: String) {}
+    fn add_auth_header(&mut self, api_key: String, access_token: String);
 }
 
 impl KiteAuth for HeaderMap {

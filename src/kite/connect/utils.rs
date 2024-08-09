@@ -1,4 +1,4 @@
-//! Utility functions used across the `connect` module.
+//! Utility functions used across the [crate::kite::connect] module.
 //!
 
 use sha2::{Digest, Sha256};

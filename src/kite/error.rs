@@ -7,14 +7,6 @@
 //! The primary error type is `ManjaError`, which consolidates all possible errors 
 //! that can occur during the execution of the client code. This module also provides 
 //! convenient error mapping from other crates like `reqwest`, `serde`, and `fantoccini`.
-//!
-//! # Components
-//! 
-//! - `ManjaError`: An enumeration of all the error types that may occur.
-//! - `KiteApiError`: A structure representing errors returned by Kite Connect API.
-//! - `KiteApiException`: An enumeration of specific error types returned by Kite Connect API.
-//! - `Result`: A custom `Result` type alias that uses `ManjaError` as the error type.
-//! - `map_deserialization_error`: A utility function to handle deserialization errors and log them.
 //! 
 use std::env::VarError;
 use std::fmt;
@@ -34,53 +26,46 @@ pub type Result<T> = std::result::Result<T, ManjaError>;
 /// originating from external crates like `reqwest` and `fantoccini`. Each variant 
 /// represents a specific type of error that can be encountered during the operation 
 /// of an API client provided by `manja`.
-///
-/// # Variants
-///
-/// - `KiteApiError`: Represents errors returned by Kite Connect API.
-/// - `EnvVarError`: Represents errors related to missing or invalid environment variables.
-/// - `InvalidHeaderValueError`: Represents errors related to invalid HTTP headers.
-/// - `WebDriverNewSessionError`: Represents errors related to starting a new WebDriver session.
-/// - `WebDriverError`: Represents general WebDriver errors.
-/// - `JSONDeserialize`: Represents errors that occur during JSON deserialization.
-/// - `IoError`: Represents general I/O errors.
-/// - `Reqwest`: Represents HTTP request errors.
-/// - `TotpError`: Represents errors related to Time-based One-Time Password (TOTP) generation or validation.
-/// - `Internal`: Represents internal errors within the `manja` crate.
 /// 
 #[derive(Debug, thiserror::Error)]
 pub enum ManjaError {
+    /// Represents errors returned by Kite Connect API.
     #[error("KiteConnect API error: {0}")]
     KiteApiError(KiteApiError),
 
+    /// Represents errors related to missing or invalid environment variables.
     #[error("Environment variable error: {0}")]
     EnvVarError(#[from] VarError),
 
+    /// Represents errors related to invalid HTTP headers.
     #[error("Invalid header value: {0}")]
     InvalidHeaderValueError(#[from] InvalidHeaderValue),
 
-    // TODO: Refactor away to `manja-webdriver` crate
+    /// Represents errors related to starting a new WebDriver session.
     #[error("WebDriver new session error: {0}")]
     WebDriverNewSessionError(#[from] NewSessionError),
 
-    // TODO: Refactor away to `manja-webdriver` crate
+    /// Represents general WebDriver errors.
     #[error("WebDriver error: {0}")]
     WebDriverError(#[from] CmdError),
 
+    /// Represents errors that occur during JSON deserialization.
     #[error("JSON deserialization error: {0}")]
     JSONDeserialize(#[from] serde_json::Error),
 
+    /// Represents general I/O errors.
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
 
+    /// Represents HTTP request errors.
     #[error("HTTP error: {0}")]
     Reqwest(#[from] reqwest::Error),
 
-    // TODO: Refactor away to `manja-webdriver` crate
+    /// Represents errors related to Time-based One-Time Password (TOTP) generation or validation.
     #[error("TOTP error: {0}")]
     TotpError(String),
 
-    // Internal manja errors
+    /// Represents internal errors within the `manja` crate.
     #[error("Internal `manja` error: {0}")]
     Internal(String),
 }
@@ -121,21 +106,10 @@ impl fmt::Display for KiteApiError {
 /// Connect API. It covers a wide range of scenarios, such as session token issues, 
 /// user account problems, order-related errors, network issues, and more.
 ///
-/// # Variants
-///
-/// - `TokenException`: Indicates the expiry or invalidation of an authenticated session.
-/// - `UserException`: Represents user account-related errors.
-/// - `OrderException`: Represents order-related errors such as placement failures.
-/// - `InputException`: Represents errors due to missing required fields or invalid parameters.
-/// - `MarginException`: Represents errors due to insufficient funds for order placement.
-/// - `HoldingException`: Represents errors due to insufficient holdings available for a sell order.
-/// - `NetworkException`: Represents network communication errors with the Order Management System (OMS).
-/// - `DataException`: Represents internal system errors in processing requests.
-/// - `GeneralException`: Represents unclassified errors.
-/// - `DeserializationException`: Represents errors during deserialization of API responses.
-/// 
 #[derive(Debug, Deserialize)]
 pub enum KiteApiException {
+    /// Indicates the expiry or invalidation of an authenticated session.
+    /// 
     /// Preceded by a 403 header, this indicates the expiry or invalidation of
     /// an authenticated session. This can be caused by the user logging out,
     /// a natural expiry, or the user logging into another Kite instance.
@@ -245,22 +219,13 @@ impl fmt::Display for KiteApiException {
     }
 }
 
-/// Utility function to map deserialization errors to `ManjaError` while logging 
-/// the JSON string that caused the error.
-///
-/// This function is useful for debugging deserialization issues by capturing and 
-/// logging the raw JSON string that failed to deserialize. It returns a 
-/// `ManjaError::JSONDeserialize` variant with the captured `serde_json::Error`.
-///
-/// # Arguments
-///
-/// * `e` - The `serde_json::Error` that occurred during deserialization.
-/// * `json_str` - The raw JSON string that caused the deserialization error.
-///
-/// # Returns
-///
-/// * `ManjaError` - The mapped error with detailed information.
-/// 
+// Utility function to map deserialization errors to `ManjaError` while logging 
+// the JSON string that caused the error.
+//
+// This function is useful for debugging deserialization issues by capturing and 
+// logging the raw JSON string that failed to deserialize. It returns a 
+// `ManjaError::JSONDeserialize` variant with the captured `serde_json::Error`.
+// 
 pub(crate) fn map_deserialization_error(e: serde_json::Error, json_str: &str) -> ManjaError {
     tracing::error!("failed deserialization of: {}", json_str);
     ManjaError::JSONDeserialize(e)

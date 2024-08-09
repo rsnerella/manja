@@ -1,6 +1,6 @@
-//! Configuration for HTTP client.
+//! Configuration for asynchronous HTTP client.
 //!
-//! This module provides configurations for the HTTP client, including default
+//! This module provides configurations for the async HTTP client, including default
 //! URLs, environment variable handling, and header management for API requests.
 //!
 //! # Environment variables:

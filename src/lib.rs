@@ -5,26 +5,26 @@
 //!
 //! # `manja` Features
 //!
-//! - [x] **Type safe**
+//! - **Type safe**
 //!    - *Compile-time Type Checking*: type safety ensures that errors related to type mismatches are caught during compilation rather than at runtime.
 //!    - *Consistent Data Models*: `manja` uses strongly typed data models that match Kite Connect API's expected inputs and outputs.
 //!    - *Enhanced Security*: by ensuring that only valid data types are sent to and received from the API, the risk of data-related vulnerabilities is reduced.
 //!    - *Automatic Serialization/Deserialization*: `manja` handles the serialization (converting data structures to JSON) and deserialization (converting JSON responses back to data structures) automatically and correctly. This ensures that the data sent to and received from Kite Connect API adheres to the expected types.
 //!    
-//! - [x] **Asynchronous**: built on the performant `tokio` async-runtime, `manja` delivers unmatched performance, ensuring your applications run faster and more efficiently than ever before.
+//! - **Asynchronous**: built on the performant `tokio` async-runtime, `manja` delivers unmatched performance, ensuring your applications run faster and more efficiently than ever before.
 //!    - *Resource Efficiency*: maximize the use of your system's resources. `manja`'s asynchronous nature allows for optimal resource management, reducing overhead and improving overall performance.
 //!    - *Concurrent Task Handling*: manage multiple tasks simultaneously without sacrificing performance or reliability.
 //!    - *Improved latency*: experience reduced latency and faster response times, ensuring your applications are always responsive.
 //!
-//! - [x] **Distributed Logging**: stay ahead of issues with real-time distributed logging using the `tracing` crate.
+//! - **Distributed Logging**: stay ahead of issues with real-time distributed logging using the `tracing` crate.
 //!    - *Streamline Development*: facilitate smoother development cycles with better debugging and faster issue resolution.
 //!    - *Reduce Downtime*: with real-time insights and quick access to logs, identify and resolve issues faster, minimizing downtime.
 //!    - *Enhance User Experience*: quickly address errors and performance bottlenecks to provide a better experience for your users.
 //!
-//! - [x] **WebSocket** support for streaming binary market data.
-//!    - *Auto-reconnect Mechanism*: `manja` provides a reliable async WebSocket client with a configurable exponential backoff retry mechanism.
+//! - **WebSocket** support for streaming binary market data.
+//!    - *Auto-reconnect Mechanism*: `manja` provides a reliable and stateful async WebSocket client with a configurable exponential backoff retry mechanism.
 //!
-//! - [x] **WebDriver** integration for retrieving `request token` from the redirect URL after successfully authenticating with the Kite platform.
+//! - **WebDriver** integration for retrieving `request token` from the redirect URL after successfully authenticating with the Kite platform.
 //!
 //! # Example:
 //! ```ignore

@@ -1,3 +1,5 @@
+//! Data types for interacting with Kite Connect (HTTP) API.
+//!
 //! This module defines the data models used in Kite Connect API. These models
 //! represent the various structures used in API requests and responses, making
 //! it easier to work with Kite Connect API in a type-safe manner.

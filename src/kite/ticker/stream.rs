@@ -83,14 +83,23 @@ impl From<UserSession> for KiteStreamCredentials {
 }
 
 type InstrumentToken = u32;
+
+/// A mapping of subscribed instruments on a WebSocket connection.
+///
+/// This map stores the instrument tokens that are actively subscribed to via
+/// a WebSocket connection, allowing for real-time streaming of market data
+/// for those instruments.
 type Subscription = HashMap<Mode, Vec<InstrumentToken>>;
 
-/// Represents the state of the WebSocket stream.
+/// Represents the state of the WebSocket stream (connection).
 ///
 #[derive(Debug, Clone)]
 pub struct StreamState {
+    // The base URL for Kite Connect WebSocket API.
     api_base: String,
+    // Credentials for accessing Kite Connect WebSocket API: `api_key` and `access_token`.
     credentials: KiteStreamCredentials,
+    // Subscribed instruments on a WebSocket stream (connection).
     subscription: Subscription,
 }
 

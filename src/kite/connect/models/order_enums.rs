@@ -55,7 +55,7 @@ pub enum OrderVariety {
 }
 
 impl fmt::Display for OrderVariety {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let display_str = match self {
             // NOTE: String representation is primarily used for routing to the
             // particulart API endpoint for placing orders
@@ -130,7 +130,7 @@ pub enum OrderStatus {
 }
 
 impl fmt::Display for OrderStatus {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let display_str = match self {
             OrderStatus::Open => "OPEN",
             OrderStatus::Complete => "COMPLETE",
@@ -173,7 +173,7 @@ pub enum OrderType {
 }
 
 impl fmt::Display for OrderType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let display_str = match self {
             OrderType::Market => "MARKET",
             OrderType::Limit => "LIMIT",
@@ -204,7 +204,7 @@ pub enum ProductType {
 }
 
 impl fmt::Display for ProductType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let display_str = match self {
             ProductType::CashAndCarry => "CNC",
             ProductType::Normal => "NRML",
@@ -234,7 +234,7 @@ pub enum OrderValidity {
 }
 
 impl fmt::Display for OrderValidity {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let display_str = match self {
             OrderValidity::Day => "DAY",
             OrderValidity::ImmediateOrCancel => "IOC",
@@ -260,7 +260,7 @@ pub enum TransactionType {
 }
 
 impl fmt::Display for TransactionType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let display_str = match self {
             TransactionType::BUY => "BUY",
             TransactionType::SELL => "SELL",

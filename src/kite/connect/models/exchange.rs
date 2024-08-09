@@ -168,7 +168,7 @@ impl From<Exchange> for &str {
 }
 
 impl fmt::Display for Exchange {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let display_str = match self {
             Exchange::NSE => "NSE",
             Exchange::NFO => "NFO",
@@ -195,7 +195,7 @@ impl<'de> Deserialize<'de> for Exchange {
         impl<'de> Visitor<'de> for ExchangeVisitor {
             type Value = Exchange;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("a valid exchange string")
             }
 
