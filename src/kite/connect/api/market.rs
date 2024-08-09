@@ -1,3 +1,11 @@
+//! Market quotes and instruments API group: `/quote/` and `/instruments/`
+//!
+//! This module provides functionality to fetch market quotes and instrument
+//! master - a CSV dump of instruments available for trading across multiple
+//! exchanges and segments, from the respective endpoints of Kite Connect API.
+//!
+//! Refer to the official [API documentation](https://kite.trade/docs/connect/v3/market-quotes/).
+//!
 use std::collections::HashMap;
 
 use crate::kite::connect::api::create_backoff_policy;

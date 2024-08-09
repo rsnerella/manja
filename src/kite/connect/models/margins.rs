@@ -1,9 +1,31 @@
+//! Types for calculating margins and charges on orders.
+//!
+//! This module defines structures and types related to calculating margins, charges,
+//! and profit and loss for orders. It includes requests and responses for order
+//! margins and charges, along with detailed structures for GST and other applicable
+//! charges.
+//!
+//! The module provides the following key structures:
+//!
+//! - `OrderMarginRequest`: Represents a request for calculating margins for an order.
+//! - `PNL`: Represents the profit and loss structure.
+//! - `GST`: Represents the GST structure.
+//! - `Charges`: Represents the various charges applied to an order.
+//! - `OrderMargin`: Represents the margin details for an order.
+//! - `BasketMargin`: Represents the margin details for a basket of orders.
+//! - `OrderChargesRequest`: Represents a request for calculating charges for an order.
+//! - `OrderCharges`: Represents the detailed charges for an order.
+//!
 use crate::kite::connect::models::exchange::Exchange;
 use crate::kite::connect::models::{OrderType, OrderVariety, ProductType, TransactionType};
 
 use serde::{Deserialize, Serialize};
 
 /// Represents a request for calculating margins for an order.
+///
+/// This structure contains all necessary information to request margin calculations
+/// for a specific order, including exchange, transaction type, order type, and more.
+///
 #[derive(Serialize, Deserialize, Debug)]
 pub struct OrderMarginRequest {
     /// Name of the exchange
@@ -27,6 +49,9 @@ pub struct OrderMarginRequest {
 }
 
 /// Represents the profit and loss (PNL) structure.
+///
+/// This structure holds the realised and unrealised profit and loss values.
+///
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PNL {
     /// Realised profit and loss
@@ -36,6 +61,9 @@ pub struct PNL {
 }
 
 /// Represents the GST structure.
+///
+/// This structure holds details about various GST components like IGST, CGST, and SGST.
+///
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GST {
     /// Integrated Goods and Services Tax
@@ -49,6 +77,9 @@ pub struct GST {
 }
 
 /// Represents the various charges applied to an order.
+///
+/// This structure includes transaction taxes, turnover charges, brokerage, stamp duty, and GST.
+///
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Charges {
     /// Tax levied for each transaction on the exchanges
@@ -70,6 +101,10 @@ pub struct Charges {
 }
 
 /// Represents the margin details for an order.
+///
+/// This structure provides detailed information about the margins required for
+/// an order, including SPAN margins, exposure margins, option premiums, and more.
+///
 #[derive(Serialize, Deserialize, Debug)]
 pub struct OrderMargin {
     /// Type of order (equity/commodity)
@@ -105,10 +140,14 @@ pub struct OrderMargin {
 
 /// Represents the margin details for a basket of orders.
 ///
+/// This structure provides an aggregated view of margins required for executing
+/// a basket of orders, along with individual order margins and final charges.
+///
 /// Note: The [charges] field can be ignored as it may not include `transaction_tax`
 /// charges because baskets can contain both `mcx` and `equity` instruments,
 /// with different tax types (STT or CTT). Users can refer to the individual
 /// order charges response in the [orders] field.
+///
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BasketMargin {
     /// Total margins required to execute the orders
@@ -122,6 +161,10 @@ pub struct BasketMargin {
 }
 
 /// Represents a request for calculating charges for an order.
+///
+/// This structure contains all necessary information to request charge calculations
+/// for a specific order, including exchange, transaction type, order type, and more.
+///
 #[derive(Serialize, Deserialize, Debug)]
 pub struct OrderChargesRequest {
     /// Unique order ID (It can be any random string to calculate charges for an imaginary order)
@@ -145,6 +188,11 @@ pub struct OrderChargesRequest {
 }
 
 /// Represents the detailed charges for an order.
+///
+/// This structure provides a breakdown of all the charges that will be applied
+/// to an order, including transaction tax, exchange turnover charge, SEBI turnover
+/// charge, brokerage, and GST.
+///
 #[derive(Serialize, Deserialize, Debug)]
 pub struct OrderCharges {
     /// Type of transaction being processed (BUY/SELL).

@@ -1,3 +1,12 @@
+//! `Exchange` enum.
+//!
+//! This module defines the `Exchange` enum, which represents various exchange options available for trading.
+//! It includes implementations for converting from and to different types, as well as helper methods
+//! for determining exchange properties such as divisors and tradability.
+//!
+//! The `Exchange` enum supports serialization and deserialization using Serde, making it suitable
+//! for use in JSON or other data formats.
+//!
 use std::fmt;
 
 use serde::de::{self, Visitor};
@@ -7,6 +16,7 @@ use serde::{Deserialize, Deserializer, Serialize};
 ///
 /// This enum represents various exchange options available for trading.
 /// Each variant corresponds to a specific exchange or market segment.
+///
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]
 pub enum Exchange {
     #[default]
@@ -41,6 +51,7 @@ impl Exchange {
     /// # Returns
     ///
     /// A `f64` value representing the divisor.
+    ///
     pub(crate) fn divisor(&self) -> f64 {
         match self {
             Self::CDS => 100_000_0.0,
@@ -56,6 +67,7 @@ impl Exchange {
     /// # Returns
     ///
     /// A `bool` indicating if the exchange is tradable.
+    ///
     pub(crate) fn is_tradable(&self) -> bool {
         match self {
             Self::NONE => false,
@@ -78,6 +90,7 @@ impl From<usize> for Exchange {
     /// # Returns
     ///
     /// An `Exchange` variant corresponding to the input value.
+    ///
     fn from(value: usize) -> Self {
         match value {
             9 => Self::INDICES,
@@ -107,6 +120,7 @@ impl From<&str> for Exchange {
     /// # Returns
     ///
     /// An `Exchange` variant corresponding to the input string.
+    ///
     fn from(value: &str) -> Self {
         match value {
             "NSE" => Self::NSE,
@@ -136,6 +150,7 @@ impl From<Exchange> for &str {
     /// # Returns
     ///
     /// An `&str` corresponding to the exchange.
+    ///
     fn from(value: Exchange) -> Self {
         match value {
             Exchange::NSE => "NSE",

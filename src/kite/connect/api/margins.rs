@@ -1,3 +1,11 @@
+//! Margin calculation API group: `/margins/` and `/charges/`
+//!
+//! This module provides functionality to calculate margin requirements and charges
+//! such as `span`, `exposure`, `option premium`, `additional`, `bo`, `cash`, `var`
+//! and `pnl` values for a list of orders from the respective endpoints of Kite Connect API.
+//!
+//! Refer to the official API [documentation](https://kite.trade/docs/connect/v3/market-quotes/).
+//!
 use crate::kite::connect::api::create_backoff_policy;
 use crate::kite::connect::{
     client::HTTPClient,

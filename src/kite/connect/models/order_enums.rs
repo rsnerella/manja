@@ -1,3 +1,28 @@
+//! Order related enums.
+//!
+//! This module defines various enums representing the attributes and statuses
+//! of trading orders. It provides a comprehensive set of enums to manage order
+//! varieties, statuses, types, product types, validity, and transaction types,
+//! which are essential for placing and managing orders in a trading system.
+//!
+//! Additionally, `fmt::Display` trait has been implemented for each enum, enabling
+//! easy conversion to their string representations. This is particularly useful
+//! for logging, debugging, and routing API requests based on order attributes.
+//!
+//! # Enums
+//!
+//! - `OrderVariety`: Represents the different varieties of orders such as regular,
+//!     after market, cover, iceberg, and auction orders.
+//! - `OrderStatus`: Enumerates the various statuses an order can have during its
+//!     lifecycle, including both common and intermediate statuses.
+//! - `OrderType`: Defines the types of orders that can be placed, such as market,
+//!     limit, stoploss, and stoploss-market orders.
+//! - `ProductType`: Specifies the product type for an order, including cash and
+//!     carry, normal, and margin intraday squareoff.
+//! - `OrderValidity`: Indicates the validity period of an order, such as day,
+//!     immediate or cancel, and time to live.
+//! - `TransactionType`: Represents the type of transaction, either buy or sell.
+//!
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
@@ -5,6 +30,7 @@ use serde::{Deserialize, Serialize};
 /// Represents the variety of an order.
 ///
 /// This enum contains several constant values used for placing different types of orders.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub enum OrderVariety {
     /// Regular order.
@@ -45,9 +71,13 @@ impl fmt::Display for OrderVariety {
 
 /// Represents the various statuses an order can have during its lifecycle.
 ///
-/// The status field in the order response shows the current state of the order. The most common statuses are OPEN, COMPLETE, CANCELLED, and REJECTED.
-/// An order can traverse through several interim and temporary statuses during its lifetime. For example, when an order is first placed or modified,
-/// it instantly passes through several stages before reaching its end state. Some of these are highlighted below.
+/// The status field in the order response shows the current state of the order.
+/// The most common statuses are OPEN, COMPLETE, CANCELLED, and REJECTED.
+/// An order can traverse through several interim and temporary statuses during
+/// its lifetime. For example, when an order is first placed or modified, it
+/// instantly passes through several stages before reaching its end state. Some
+/// of these are highlighted below.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub enum OrderStatus {
     /// The order has been placed and is currently open.
@@ -122,6 +152,7 @@ impl fmt::Display for OrderStatus {
 /// Represents the type of an order.
 ///
 /// This enum contains several constant values used for placing different types of orders.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub enum OrderType {
     /// Market order.
@@ -156,6 +187,7 @@ impl fmt::Display for OrderType {
 /// Represents the product type for an order.
 ///
 /// This enum contains several constant values used for specifying the product type.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ProductType {
     /// Cash & Carry for equity.
@@ -185,6 +217,7 @@ impl fmt::Display for ProductType {
 /// Represents the validity of an order.
 ///
 /// This enum contains several constant values used for specifying the order validity.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub enum OrderValidity {
     /// Regular order.
@@ -214,6 +247,7 @@ impl fmt::Display for OrderValidity {
 /// Represents the validity of an order.
 ///
 /// This enum contains several constant values used for specifying the order validity.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub enum TransactionType {
     /// Buy.

@@ -1,3 +1,14 @@
+//! Portfolio API group: `/portfolio/`
+//!
+//! This module provides functionality to interact with the portfolio-related
+//! endpoints of Kite Connect API.
+//!
+//! A user's portfolio consists of long term equity holdings and short term
+//! positions. The portfolio APIs return instruments in a portfolio with up-to-date
+//! profit and loss computations.
+//!
+//! Refer to the official [API documentation](https://kite.trade/docs/connect/v3/portfolio/).
+//!
 use backoff::ExponentialBackoff;
 
 use crate::kite::connect::api::create_backoff_policy;
@@ -87,20 +98,6 @@ impl<'c> Portfolio<'c> {
             .await
     }
 
-    /// Retrieve the list of auctions that are currently being held.
-    ///
-    /// This API returns a list of auctions that are currently being held,
-    /// along with details about each auction such as the auction number,
-    /// the security being auctioned, the last price of the security, and
-    /// the quantity of the security being offered. Only the stocks that
-    /// you hold in your demat account will be shown in the auctions list.
-    ///
-    pub async fn get_auctions(&self) -> Result<KiteApiResponse<Vec<Auction>>> {
-        self.client
-            .get(&format!("/portfolio/holdings/auctions"), &self.backoff)
-            .await
-    }
-
     /// Convert the margin product of an open position.
     ///
     /// All positions held are of specific margin products such as NRML, MIS
@@ -115,6 +112,20 @@ impl<'c> Portfolio<'c> {
     ) -> Result<KiteApiResponse<bool>> {
         self.client
             .put(&format!("/portfolio/positions"), request, &self.backoff)
+            .await
+    }
+
+    /// Retrieve the list of auctions that are currently being held.
+    ///
+    /// This API returns a list of auctions that are currently being held,
+    /// along with details about each auction such as the auction number,
+    /// the security being auctioned, the last price of the security, and
+    /// the quantity of the security being offered. Only the stocks that
+    /// you hold in your demat account will be shown in the auctions list.
+    ///
+    pub async fn get_auctions(&self) -> Result<KiteApiResponse<Vec<Auction>>> {
+        self.client
+            .get(&format!("/portfolio/holdings/auctions"), &self.backoff)
             .await
     }
 
