@@ -1,4 +1,24 @@
-// TODO: Add module level doc comments
+//! Portfolio related types.
+//!
+//! This module defines various structures and enums related to the user's
+//! portfolio holdings, positions, and related actions in a trading system.
+//! It provides detailed representations of holdings, positions, auctions, and
+//! position conversion requests, making it easier to manage and process
+//! portfolio activities.
+//!
+//! The key components of this module are:
+//!
+//! - `Holding`: Represents a holding in the user's portfolio, containing
+//!     long-term equity delivery stocks.
+//! - `Auction`: Represents an auction currently being held, with details about
+//!     the security being auctioned.
+//! - `Position`: Represents a position in the user's portfolio, containing short
+//!     to medium-term derivatives and intraday equity stocks.
+//! - `PositionType`: Enum representing the variety of positions, either overnight
+//!     or day positions.
+//! - `PositionConversionRequest`: Represents the request parameters required for
+//!     converting a position's margin product.
+//!
 use crate::kite::connect::models::{
     exchange::Exchange,
     order_enums::{ProductType, TransactionType},
@@ -13,6 +33,7 @@ use serde::{Deserialize, Serialize};
 /// is sold, delisted, or changed by the exchanges. Instruments in the holdings
 /// reside in the user's DEMAT account, as settled by exchanges and clearing
 /// institutions.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Holding {
     /// Exchange tradingsymbol of the instrument.
@@ -27,8 +48,8 @@ pub struct Holding {
     /// The standard ISIN representing stocks listed on multiple exchanges.
     pub isin: String,
 
-    /// Quantity on T+1 day after order execution. Stocks are
-    /// usually delivered into DEMAT accounts on T+2.
+    /// Quantity on T+1 day after order execution. Stocks are usually delivered
+    /// into DEMAT accounts on T+2.
     pub t1_quantity: i64,
 
     /// Quantity delivered to Demat.
@@ -85,9 +106,11 @@ pub struct Holding {
 
 /// Represents an auction currently being held.
 ///
-/// This struct contains details about an auction such as the auction number, the security being auctioned,
-/// the last price of the security, and the quantity of the security being offered. Only the stocks that you
-/// hold in your demat account will be shown in the auctions list.
+/// This struct contains details about an auction such as the auction number,
+/// the security being auctioned, the last price of the security, and the quantity
+/// of the security being offered. Only the stocks that you hold in your demat
+/// account will be shown in the auctions list.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Auction {
     /// Exchange tradingsymbol of the instrument.
@@ -111,7 +134,8 @@ pub struct Auction {
     /// Net quantity (T+1 + realised).
     pub quantity: i64,
 
-    /// Quantity on T+1 day after order execution. Stocks are usually delivered into DEMAT accounts on T+2.
+    /// Quantity on T+1 day after order execution. Stocks are usually delivered
+    /// into DEMAT accounts on T+2.
     pub t1_quantity: i64,
 
     /// Quantity delivered to Demat.
@@ -169,6 +193,7 @@ pub struct Auction {
 /// The positions API returns two sets of positions, net and day.
 /// Net is the actual, current net position portfolio, while day is a snapshot
 /// of the buying and selling activity for that particular day.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Position {
     /// Exchange tradingsymbol of the instrument.
@@ -208,7 +233,8 @@ pub struct Position {
     /// Net returns on the position; Profit and loss.
     pub pnl: f64,
 
-    /// Mark to market returns (computed based on the last close and the last traded price).
+    /// Mark to market returns (computed based on the last close and the last
+    /// traded price).
     pub m2m: f64,
 
     /// Unrealised intraday returns.
@@ -262,7 +288,9 @@ pub struct Position {
 
 /// Represents the variety of an order.
 ///
-/// This enum contains several constant values used for placing different types of orders.
+/// This enum contains several constant values used for placing different types
+/// of orders.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub enum PositionType {
     /// Overnight position.
@@ -277,6 +305,7 @@ pub enum PositionType {
 /// Represents the request parameters for a position conversion.
 ///
 /// These parameters are required to convert a position's margin product.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PositionConversionRequest {
     /// Tradingsymbol of the instrument.

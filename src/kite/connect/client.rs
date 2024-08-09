@@ -1,16 +1,19 @@
-//! Asynchronous KiteConnect client
+//! Asynchronous HTTP client.
 //!
-//! This module provides an asynchronous client for interacting with the KiteConnect API.
-//! The `HTTPClient` struct encapsulates a `reqwest::Client` and includes methods for making
-//! HTTP requests to various KiteConnect endpoints. The client supports retry mechanisms
-//! with exponential backoff and handles user session management.
+//! This module provides an asynchronous HTTP client for interacting with the
+//! KiteConnect API. The `HTTPClient` struct encapsulates a `reqwest::Client`
+//! and includes methods for making HTTP requests to various KiteConnect endpoints.
+//! The client supports retry mechanisms with exponential backoff and handles
+//! user session management.
 //!
 //! # Features
 //!
-//! - **Session Management**: Manages user sessions, including storing and retrieving session tokens.
-//! - **Request Handling**: Provides methods for making GET, POST, POST form, and DELETE requests.
-//! - **Configurable**: Allows configuration via the `Config` struct, which can be loaded from
-//!   environment variables or passed directly.
+//! - **Session Management**: Manages user sessions, including storing and retrieving
+//!     session tokens.
+//! - **Request Handling**: Provides methods for making GET, POST, POST form, and
+//!     DELETE requests.
+//! - **Configurable**: Allows configuration via the `Config` struct, which can
+//!     be loaded from environment variables or passed directly.
 //!
 //! # Examples
 //!
@@ -26,13 +29,13 @@
 //! let client = HTTPClient::with_config(config);
 //! ```
 //!
-//! For more information on using the KiteConnect API, refer to the
-//! [official documentation](https://kite.trade/docs/connect/v3/).
+//! For more information on using Kite Connect API, refer to the official
+//! [documentation](https://kite.trade/docs/connect/v3/).
+//!
 use core::future::Future;
 use std::time::Duration;
 
 use backoff::ExponentialBackoff;
-// use reqwest::{Request, StatusCode};
 use secrecy::{ExposeSecret, Secret};
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -54,6 +57,7 @@ use crate::kite::{
 /// You do **not** have to wrap `KiteConnectClient` in an [`Rc`] or [`Arc`] to
 /// **reuse** it because the `reqwest::Client` used internally already uses an
 /// [`Arc`].
+///
 #[derive(Clone)]
 pub struct HTTPClient {
     client: reqwest::Client,
@@ -94,6 +98,7 @@ impl HTTPClient {
     }
 
     /// Create a default HTTP client with config.
+    ///
     pub fn with_config(config: Config) -> Self {
         Self {
             // Default timeout for I/O operations: 10 seconds
@@ -105,33 +110,40 @@ impl HTTPClient {
     }
 
     /// Exponential backoff for retrying [rate limited](https://kite.trade/docs/connect/v3/exceptions/#api-rate-limit) requests.
+    ///
     pub fn with_backoff(mut self, backoff: backoff::ExponentialBackoff) -> Self {
         self.backoff = backoff;
         self
     }
 
-    /// Add `UserSession` to the `HTTPClient`
+    /// Add `UserSession` to the `HTTPClient`.
+    ///
     pub fn with_user_session(mut self, user_session: UserSession) -> Self {
         self.session = Some(user_session);
         self
     }
 
+    /// Set `UserSession` to the `HTTPClient`.
+    ///
     pub fn set_user_session(&mut self, user_session: Option<UserSession>) {
         self.session = user_session;
         ()
     }
 
     /// User session, if it exists.
+    ///
     pub fn user_session(&self) -> Option<&UserSession> {
         self.session.as_ref()
     }
 
     /// HTTP configurations and Kite user credentials.
+    ///
     pub fn http_config(&self) -> &Config {
         &self.config
     }
 
     /// Reqwest HTTP Client.
+    ///
     pub fn http_client(&self) -> &reqwest::Client {
         &self.client
     }
@@ -139,38 +151,45 @@ impl HTTPClient {
     // --- [ API Groups ] ---
 
     /// To call [User] related APIs using this client.
+    ///
     pub fn user(&self) -> User {
         User::new(self)
     }
 
     /// To call [Session] related APIs using this client.
+    ///
     pub fn session(&mut self) -> Session {
         Session::new(self)
     }
 
     /// To call [Orders] related APIs using this client.
+    ///
     pub fn orders(&mut self) -> Orders {
         Orders::new(self)
     }
 
     /// To call [Market] related APIs using this client.
+    ///
     pub fn market(&mut self) -> Market {
         Market::new(self)
     }
 
     /// To call [Market] related APIs using this client.
+    ///
     pub fn margins(&mut self) -> Margins {
         Margins::new(self)
     }
 
     /// To call [Market] related APIs using this client.
+    ///
     pub fn charges(&mut self) -> Charges {
         Charges::new(self)
     }
 
     // --- [ HTTP verb functions ] ---
 
-    /// Make a GET request to {path} and return the response body
+    /// Make a GET request to {path} and return the response body.
+    ///
     pub(crate) async fn get_raw(&self, path: &str, backoff: &ExponentialBackoff) -> Result<String> {
         let request_baker = || async {
             Ok(self
@@ -184,7 +203,8 @@ impl HTTPClient {
         self.execute_raw(backoff, request_baker).await
     }
 
-    /// Make a GET request to {path} and deserialize the response body
+    /// Make a GET request to {path} and deserialize the response body.
+    ///
     pub(crate) async fn get<Model>(
         &self,
         path: &str,
@@ -205,7 +225,8 @@ impl HTTPClient {
         self.execute(backoff, request_baker).await
     }
 
-    /// Make a GET request to {path} with given Query and deserialize the response body
+    /// Make a GET request to {path} with given Query and deserialize the response body.
+    ///
     pub(crate) async fn get_with_query<Q, Model>(
         &self,
         path: &str,
@@ -229,7 +250,8 @@ impl HTTPClient {
         self.execute(backoff, request_baker).await
     }
 
-    /// Make a POST request to {path} and deserialize the response body
+    /// Make a POST request to {path} and deserialize the response body.
+    ///
     pub(crate) async fn post<Model, Payload>(
         &self,
         path: &str,
@@ -253,7 +275,9 @@ impl HTTPClient {
         self.execute(backoff, request_baker).await
     }
 
-    /// POST a form at {path} and deserialize the response body into the generic `Model` type
+    /// POST a form at {path} and deserialize the response body into the generic
+    /// `Model` type.
+    ///
     pub(crate) async fn post_form<Model, F>(
         &self,
         path: &str,
@@ -277,7 +301,8 @@ impl HTTPClient {
         self.execute(backoff, request_baker).await
     }
 
-    /// Make a PUT request to {path} and deserialize the response body
+    /// Make a PUT request to {path} and deserialize the response body.
+    ///
     pub(crate) async fn put<Model, Payload>(
         &self,
         path: &str,
@@ -301,7 +326,8 @@ impl HTTPClient {
         self.execute(backoff, request_baker).await
     }
 
-    /// Make a DELETE request to {path} and deserialize the response body
+    /// Make a DELETE request to {path} and deserialize the response body.
+    ///
     pub(crate) async fn delete<Model>(
         &self,
         path: &str,
@@ -338,7 +364,8 @@ impl HTTPClient {
         self.execute(backoff, request_baker).await
     }
 
-    /// Execute a HTTP request asynchronously with backoff
+    /// Execute a HTTP request asynchronously with backoff.
+    ///
     async fn execute<Model, RB, Fut>(
         &self,
         backoff: &ExponentialBackoff,
@@ -357,7 +384,8 @@ impl HTTPClient {
         Ok(model)
     }
 
-    /// Execute a HTTP request asynchronously with backoff
+    /// Execute a HTTP request asynchronously with backoff.
+    ///
     async fn execute_raw<RB, Fut>(
         &self,
         backoff: &ExponentialBackoff,

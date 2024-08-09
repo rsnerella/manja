@@ -1,5 +1,31 @@
+//! Various quote and instrument related types.
+//!
+//! This module defines various types and structures related to trading
+//! instruments and market data.
+//!
+//! It includes the definitions for different instrument types, trading
+//! instruments, OHLC (Open, High, Low, Close) data, market depth levels, and
+//! different modes of market quotes. These types are used for managing and
+//! processing trading instruments and their market data within the application.
+//!
+//! # Types and Structures
+//!
+//! - `InstrumentType`: Enum representing different types of instruments (e.g. equity,
+//!     futures, options).
+//! - `Instrument`: Struct representing a trading instrument with various
+//!     attributes such as token, symbol, name, price, etc.
+//! - `OHLC`: Struct representing OHLC data for a market instrument.
+//! - `DepthLevel`: Struct representing the depth of market data for buy or sell orders.
+//! - `Depth`: Struct representing the market depth for an instrument, including
+//!     bid and ask levels.
+//! - `QuoteMode`: Enum representing different modes of market quotes (Full, OHLC, LTP).
+//! - `KiteQuote`: Trait defining the mode of market quotes.
+//! - `FullQuote`: Struct representing a market quote for an instrument, including OHLC,
+//!     volume, and market depth.
+//! - `OHLCQuote`: Struct representing an OHLC + LTP quote for an instrument.
+//! - `LTPQuote`: Struct representing an LTP quote for an instrument.
+//!
 use crate::kite::connect::models::exchange::Exchange;
-use crate::kite::error::{ManjaError, Result};
 
 use chrono::NaiveDate;
 use serde::de::DeserializeOwned;
@@ -8,6 +34,7 @@ use serde::{Deserialize, Serialize};
 /// Represents the type of the instrument.
 ///
 /// This enum contains several constant values used for specifying the type of instrument.
+///
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum InstrumentType {
     /// Equity.
@@ -29,28 +56,36 @@ pub enum InstrumentType {
 
 /// Represents a trading instrument.
 ///
-/// Between multiple exchanges and segments, there are tens of thousands of different kinds
-/// of instruments that trade. Any application that facilitates trading needs to have a
-/// master list of these instruments. The instruments API provides a consolidated,
-/// import-ready CSV list of instruments available for trading.
+/// Between multiple exchanges and segments, there are tens of thousands of
+/// different kinds of instruments that trade. Any application that facilitates
+/// trading needs to have a master list of these instruments. The instruments
+/// API provides a consolidated, import-ready CSV list of instruments available
+/// for trading.
 ///
 /// # CSV response columns
 ///
-/// - `instrument_token`: Numerical identifier used for subscribing to live market quotes with the WebSocket API.
-/// - `exchange_token`: The numerical identifier issued by the exchange representing the instrument.
+/// - `instrument_token`: Numerical identifier used for subscribing to live market
+///     quotes with the WebSocket API.
+/// - `exchange_token`: The numerical identifier issued by the exchange representing
+///     the instrument.
 /// - `tradingsymbol`: Exchange tradingsymbol of the instrument.
-/// - `name`: Name of the company (for equity instruments). This can be `None` for non-equity instruments.
+/// - `name`: Name of the company (for equity instruments). This can be `None` for
+///     non-equity instruments.
 /// - `last_price`: Last traded market price.
-/// - `expiry`: Expiry date (for derivatives). Optional because it may not be presYent for some instruments.
-/// - `strike`: Strike price (for options). Optional because it may not be present for some instruments.
+/// - `expiry`: Expiry date (for derivatives). Optional because it may not be present
+///     for some instruments.
+/// - `strike`: Strike price (for options). Optional because it may not be present
+///     for some instruments.
 /// - `tick_size`: Value of a single price tick.
 /// - `lot_size`: Quantity of a single lot.
 /// - `instrument_type`: Type of the instrument (e.g., EQ, FUT, CE, PE).
 /// - `segment`: Segment the instrument belongs to.
 /// - `exchange`: Exchange where the instrument is traded.
+///
 #[derive(Debug, Deserialize, Clone)]
 pub struct Instrument {
-    /// Numerical identifier used for subscribing to live market quotes with the WebSocket API.
+    /// Numerical identifier used for subscribing to live market quotes with the
+    /// WebSocket API.
     pub instrument_token: i32,
 
     /// The numerical identifier issued by the exchange representing the instrument.
@@ -59,16 +94,19 @@ pub struct Instrument {
     /// Exchange tradingsymbol of the instrument.
     pub tradingsymbol: String,
 
-    /// Name of the company (for equity instruments). This can be `None` for non-equity instruments.
+    /// Name of the company (for equity instruments). This can be `None` for
+    /// non-equity instruments.
     pub name: Option<String>,
 
     /// Last traded market price.
     pub last_price: f64,
 
-    /// Expiry date (for derivatives). Optional because it may not be present for some instruments.
+    /// Expiry date (for derivatives). Optional because it may not be present for
+    /// some instruments.
     pub expiry: Option<NaiveDate>,
 
-    /// Strike price (for options). Optional because it may not be present for some instruments.
+    /// Strike price (for options). Optional because it may not be present for
+    /// some instruments.
     pub strike: Option<f64>,
 
     /// Value of a single price tick.
@@ -92,6 +130,15 @@ pub struct Instrument {
 }
 
 impl Instrument {
+    /// Converts the instrument to a query string format used for market data requests.
+    ///
+    /// This method constructs a query string representation of the instrument,
+    /// which can be used to request market data.
+    ///
+    /// # Returns
+    ///
+    /// A tuple containing the query key and the query string.
+    ///
     pub fn to_query(&mut self) -> (&str, &str) {
         if let Some(ref query) = self.query {
             ("i", query.as_ref())
@@ -104,6 +151,7 @@ impl Instrument {
 }
 
 /// Represents the OHLC (Open, High, Low, Close) data of a market instrument.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct OHLC {
     /// Price at market opening.
@@ -120,6 +168,7 @@ pub struct OHLC {
 }
 
 /// Represents the depth of market data for buy or sell orders.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DepthLevel {
     /// Price at which the depth stands.
@@ -133,6 +182,7 @@ pub struct DepthLevel {
 }
 
 /// Represents the market depth for an instrument, including bid and ask levels.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Depth {
     /// The bid levels.
@@ -142,17 +192,23 @@ pub struct Depth {
     pub sell: Vec<DepthLevel>,
 }
 
+/// Represents the different modes of market quotes.
+///
 pub enum QuoteMode {
     Full,
     OHLC,
     LTP,
 }
 
+/// Trait for types that can be used as kite market quotes.
+///
 pub(crate) trait KiteQuote: DeserializeOwned {
     fn mode() -> QuoteMode;
 }
 
-/// Represents a market quote for an instrument, including OHLC, volume, and market depth.
+/// Represents a market quote for an instrument, including OHLC, volume, and
+/// market depth.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FullQuote {
     /// The numerical identifier issued by the exchange representing the instrument.
@@ -179,7 +235,8 @@ pub struct FullQuote {
     /// Total quantity of sell orders pending at the exchange.
     pub sell_quantity: Option<i64>,
 
-    /// Total number of outstanding contracts held by market participants exchange-wide (only F&O).
+    /// Total number of outstanding contracts held by market participants
+    /// exchange-wide (only F&O).
     pub open_interest: Option<f64>,
 
     /// Last traded quantity.
@@ -216,7 +273,9 @@ impl KiteQuote for FullQuote {
     }
 }
 
-/// Represents an OHLC + LTP quote for an instrument, including OHLC, volume, and market depth.
+/// Represents an OHLC + LTP quote for an instrument, including OHLC, volume,
+/// and market depth.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct OHLCQuote {
     /// The numerical identifier issued by the exchange representing the instrument.
@@ -235,7 +294,9 @@ impl KiteQuote for OHLCQuote {
     }
 }
 
-/// Represents an LTP quote for an instrument, including OHLC, volume, and market depth.
+/// Represents an LTP quote for an instrument, including OHLC, volume, and
+/// market depth.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LTPQuote {
     /// The numerical identifier issued by the exchange representing the instrument.

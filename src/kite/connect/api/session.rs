@@ -1,8 +1,8 @@
 //! Session API group: `/session/`
 //!
 //! The [Session] API group provides endpoints for managing user sessions,
-//! including the two-step login flow required to authenticate with the
-//! KiteConnect API.
+//! including the two-step login flow required to authenticate with Kite
+//! Connect API.
 //!
 //! This module facilitates the following:
 //!
@@ -15,6 +15,7 @@
 //!
 //! For detailed information, refer to the official KiteConnect API
 //! [documentation](https://kite.trade/docs/connect/v3/user/#login-flow).
+//!
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
@@ -36,8 +37,8 @@ use crate::kite::traits::{KiteConfig, KiteLoginFlow};
 /// This struct handles operations related to user sessions, including login
 /// and session management, by interfacing with the HTTP client.
 ///
-/// For more details, refer to the official
-/// [API documentation](https://kite.trade/docs/connect/v3/user/#login-flow).
+/// For more details, refer to the official API [documentation](https://kite.trade/docs/connect/v3/user/#login-flow).
+///
 pub struct Session<'c> {
     /// A mutable reference to the HTTP client used for making API requests
     /// and storing a `UserSession` object after a successful login flow.
@@ -68,6 +69,7 @@ impl<'c> KiteLoginFlow for Session<'c> {
     ///     // Implement the logic to generate the request token
     /// }).await?;
     /// ```
+    ///
     fn gen_request_token<F, Fut>(
         &self,
         f: F,
@@ -100,6 +102,7 @@ impl<'c> Session<'c> {
     /// let mut client = HTTPClient::new();
     /// let session = Session::new(&mut client);
     /// ```
+    ///
     pub fn new(client: &'c mut HTTPClient) -> Self {
         Self {
             client,
@@ -150,6 +153,7 @@ impl<'c> Session<'c> {
     ///     Err(e) => println!("Error generating session: {}", e),
     /// }
     /// ```
+    ///
     pub async fn generate_session(
         &mut self,
         request_token: &str,
@@ -191,6 +195,7 @@ impl<'c> Session<'c> {
     /// with the KiteConnect API can be made.
     ///
     /// This is useful for logging out a user or resetting their session for security reasons.
+    ///
     pub async fn delete_session(&mut self) -> Result<KiteApiResponse<bool>> {
         match self
             .client

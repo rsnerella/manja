@@ -1,33 +1,68 @@
+//! User session type.
+//!
+//! This module provides structures and functions for managing user sessions
+//! and authentication in Kite Connect API.
+//!
+//! The key components of this module are:
+//!
+//! - `UserSession`: Represents a user's session, including authentication tokens
+//!     and profile information.
+//! - `Meta`: Represents additional metadata for the user session.
+//!
 use secrecy::{ExposeSecret, Secret};
 use serde::{ser::SerializeStruct, Deserialize, Deserializer, Serialize, Serializer};
 
+/// Represents additional metadata for the user session.
+///
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Meta {
+    /// Consent for demat account.
     demat_consent: String,
 }
 
+/// Represents a user's session, including authentication tokens and profile
+/// information.
+///
 #[derive(Clone, Debug)]
 pub struct UserSession {
+    /// Type of user.
     pub user_type: String,
+    /// User's email address.
     pub email: String,
+    /// User's email address.
     pub user_name: String,
+    /// User's short name.
     pub user_shortname: String,
+    /// Broker's name.
     pub broker: String,
+    /// List of exchanges enabled for the user.
     pub exchanges: Vec<String>,
+    /// List of product types enabled for the user.
     pub products: Vec<String>,
+    /// List of order types enabled for the user.
     pub order_types: Vec<String>,
+    /// URL to the user's avatar.
     pub avatar_url: Option<String>,
+    /// Unique user ID.
     pub user_id: String,
+    /// API key.
     pub api_key: Secret<String>,
+    /// Access token for authentication.
     pub access_token: Secret<String>,
+    /// Public token for session validation.
     pub public_token: Secret<String>,
+    /// Refresh token for extended access.
     pub refresh_token: Secret<String>,
+    /// Encrypted token.
     pub enctoken: Secret<String>,
+    /// Timestamp of the user's last login.
     pub login_time: String,
+    /// Additional metadata for the session.
     pub meta: Option<Meta>,
 }
 
-// Implement Serialize for UserSession
+// Custom implementation of `Serialize` for `UserSession` because secrets
+// should not be exposed.
 impl Serialize for UserSession {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -55,7 +90,7 @@ impl Serialize for UserSession {
     }
 }
 
-// Implement Deserialize for UserSession
+// Custom implementation of `Deserialize` for `UserSession`.
 impl<'de> Deserialize<'de> for UserSession {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

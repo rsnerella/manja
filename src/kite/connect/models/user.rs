@@ -1,9 +1,29 @@
+//! User profile related types.
+//!
+//! This module provides structures and functions for managing user profiles,
+//! margins, and other related information in the Kite Connect API. It includes
+//! detailed representations of user profiles, segment details, available and
+//! utilized balances, and segment kinds.
+//!
+//! The key components of this module are:
+//!
+//! - `UserProfile`: Represents the user's profile, including user ID, email,
+//!     name, broker details, and products enabled.
+//! - `Meta`: Represents additional metadata associated with the user's profile.
+//! - `UserMargins`: Represents the user's margins for equity and commodity segments.
+//! - `Segment`: Represents the details of a specific segment, including available
+//!     and utilized balances.
+//! - `Available`: Represents the available balance details within a segment.
+//! - `Utilised`: Represents the utilized balance details within a segment.
+//! - `SegmentKind`: Enum representing the different types of segments (commodity
+//!     and equity).
+//!
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-// Models for the `/user/profile` endpoint ------------------------------------
-
-/// Kite API response from the endpoint: `/user/profile`
+/// Represents the user's profile, including user ID, email, name, broker details,
+/// and products enabled.
+///
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct UserProfile {
     /// The unique, permanent user id registered with the broker and the exchanges
@@ -30,16 +50,19 @@ pub struct UserProfile {
     meta: Meta,
 }
 
-/// Additional metadata
+/// Represents additional metadata associated with the user's profile.
+///
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Meta {
     /// Demat consent: empty, consent or physical
     demat_consent: String,
 }
 
-// Models for the `/user/margins` endpoint ------------------------------------
-
-/// Kite API response from the endpoint: `/user/margins`
+/// Represents the user's margins for equity and commodity segments.
+///
+/// This struct contains details about the user's funds, cash, and margin
+/// information for different segments.
+///
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct UserMargins {
     /// Equity segment details
@@ -48,7 +71,9 @@ pub struct UserMargins {
     pub commodity: Option<Segment>,
 }
 
-/// Segment details
+/// Represents the details of a specific segment, including available and
+/// utilized balances.
+///
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Segment {
     /// Indicates whether the segment is enabled for the user
@@ -62,7 +87,8 @@ pub struct Segment {
     pub utilised: Utilised,
 }
 
-/// Available balance details
+/// Represents the available balance details within a segment.
+///
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Available {
     /// Raw cash balance in the account available for trading (also includes
@@ -80,7 +106,8 @@ pub struct Available {
     pub collateral: f64,
 }
 
-/// Utilized balance details
+/// Represents the utilized balance details within a segment.
+///
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Utilised {
     /// Sum of all utilised margins
@@ -111,6 +138,8 @@ pub struct Utilised {
     pub delivery: f64,
 }
 
+/// Enum representing the different types of segments (commodity and equity).
+///
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum SegmentKind {
     Commodity,

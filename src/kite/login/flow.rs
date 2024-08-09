@@ -1,12 +1,12 @@
-/// KiteConnect login flow module.
+/// Kite Connect login flow.
 ///
-/// This module provides functionality to automate the login flow for KiteConnect
+/// This module provides functionality to automate the login flow for Kite Connect
 /// using a headless browser. It handles navigating to the login page, entering
 /// user credentials, generating TOTP codes, and retrieving the request token from
 /// the redirected URL after successful authentication.
 ///
-/// For detailed information, refer to the official
-/// [KiteConnect API documentation](https://kite.trade/docs/connect/v3/user/#login-flow).
+/// For detailed information, refer to the official Kite Connect API
+/// [documentation](https://kite.trade/docs/connect/v3/user/#login-flow).
 use fantoccini::Locator;
 use secrecy::ExposeSecret;
 use url::Url;
@@ -19,7 +19,7 @@ use crate::kite::traits::KiteConfig;
 
 /// Performs the browser-based login flow to obtain a request token.
 ///
-/// This asynchronous function automates the process of logging into the KiteConnect
+/// This asynchronous function automates the process of logging into Kite Connect
 /// platform by controlling a headless browser. It navigates to the login page, enters
 /// the user ID and password, generates a TOTP code, and retrieves the request token
 /// from the redirected URL.
@@ -42,6 +42,7 @@ use crate::kite::traits::KiteConfig;
 /// let config = Config::default();
 /// let request_token = browser_login_flow(Box::new(config)).await?;
 /// ```
+///
 pub async fn browser_login_flow(config: Box<dyn KiteConfig>) -> Result<String> {
     let api_key = config.credentials().api_key();
     let user_id = config.credentials().user_id();

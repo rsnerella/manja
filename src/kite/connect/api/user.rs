@@ -1,10 +1,11 @@
 //! User API group: `/user/`
 //!
 //! This module provides functionality to interact with the user-related endpoints
-//! of the KiteConnect API. It allows fetching user profile information and margin
+//! of Kite Connect API. It allows fetching user profile information and margin
 //! details for various segments.
 //!
-//! Refer to the official [API documentation](https://kite.trade/docs/connect/v3/user/#user).
+//! Refer to the official API [documentation](https://kite.trade/docs/connect/v3/user/#user).
+//!
 use backoff::ExponentialBackoff;
 
 use crate::kite::connect::api::create_backoff_policy;
@@ -17,9 +18,10 @@ use crate::kite::error::Result;
 /// User related API endpoints.
 ///
 /// This struct provides methods to interact with the user-related API endpoints
-/// of KiteConnect. It allows fetching user profile information and user margins.
+/// of Kite Connect. It allows fetching user profile information and user margins.
 ///
-/// Refer to the official [API documentation](https://kite.trade/docs/connect/v3/user/#user) for more details.
+/// Refer to the official API [documentation](https://kite.trade/docs/connect/v3/user/#user) for more details.
+///
 pub struct User<'c> {
     /// Reference to the HTTP client used for making API requests.
     pub client: &'c HTTPClient,
@@ -37,6 +39,7 @@ impl<'c> User<'c> {
     /// # Returns
     ///
     /// A new instance of `User`.
+    ///
     pub fn new(client: &'c HTTPClient) -> Self {
         Self {
             client,
@@ -54,6 +57,7 @@ impl<'c> User<'c> {
     /// # Returns
     ///
     /// The `User` instance with the updated backoff policy.
+    ///
     pub fn with_backoff(mut self, backoff: ExponentialBackoff) -> Self {
         self.backoff = backoff;
         self
@@ -71,6 +75,7 @@ impl<'c> User<'c> {
     /// or an error if the request fails.
     ///
     /// Refer to the Kite API [documentation](https://kite.trade/docs/connect/v3/user/#user-profile) for more details.
+    ///
     pub async fn profile(&self) -> Result<KiteApiResponse<UserProfile>> {
         self.client.get(&"/user/profile", &self.backoff).await
     }
@@ -85,6 +90,7 @@ impl<'c> User<'c> {
     /// or an error if the request fails.
     ///
     /// Refer to the Kite API [documentation](https://kite.trade/docs/connect/v3/user/#funds-and-margins) for more details.
+    ///
     pub async fn margins(&self) -> Result<KiteApiResponse<UserMargins>> {
         self.client.get(&"/user/margins", &self.backoff).await
     }
@@ -104,6 +110,7 @@ impl<'c> User<'c> {
     /// or an error if the request fails.
     ///
     /// Refer to the Kite API [documentation](https://kite.trade/docs/connect/v3/user/#funds-and-margins) for more details.
+    ///
     pub async fn margins_by_segment(
         &self,
         segment: SegmentKind,
@@ -130,6 +137,7 @@ mod tests {
 
     use super::*;
 
+    // TODO: This feels hacky. Fix it.
     fn mock_map() -> HashMap<(HTTPMethod, APIEndpoint), TestResponse> {
         let mut mmap = HashMap::new();
         mmap.insert(

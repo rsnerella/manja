@@ -1,3 +1,18 @@
+//! Chrome and WebDriver launcher.
+//!
+//! This module provides functionality for launching and interacting with a
+//! Chrome browser instance using WebDriver. It includes a function to launch
+//! the browser and establish a connection with the WebDriver, facilitating
+//! browser automation tasks.
+//!
+//! # Environment Variables
+//!
+//! The following environment variables must be set to use the functionality
+//! in this module:
+//!
+//! - `CHROME_BINARY_PATH`: The path to the Chrome browser binary.
+//! - `CHROMEDRIVER_PATH`: The path to the Chromedriver executable.
+//!
 use crate::kite::error::Result;
 use crate::kite::login::BrowserClient;
 
@@ -36,6 +51,7 @@ type WebDriverProcess = tokio::process::Child;
 /// // Don't forget to terminate the driver process when done
 /// driver_process.kill().await.unwrap();
 /// ```
+///
 pub async fn launch_browser() -> Result<(BrowserClient, WebDriverProcess)> {
     let chrome_binary_path = env::var("CHROME_BINARY_PATH")?;
     let chromedriver_path = env::var("CHROMEDRIVER_PATH")?;
