@@ -2,3 +2,6 @@
 .env
 .install
 Cargo.lock
+.temp
+*.py
+data/
