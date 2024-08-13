@@ -31,7 +31,7 @@ type WebDriverProcess = tokio::process::Child;
 ///
 /// A tuple containing:
 /// - `BrowserClient`: The client to interact with the browser.
-/// - `WebDriverProcess`: The process handle for the Chromedriver.
+/// - `WebDriverProcess`: The `tokio` child process handle for the Chromedriver.
 ///
 /// # Errors
 ///
@@ -43,7 +43,7 @@ type WebDriverProcess = tokio::process::Child;
 /// # Example
 ///
 /// ```ignore
-/// use manja::kite::login::browser::launch_browser;
+/// use manja::kite::login::launch_browser;
 ///
 /// let (client, driver_process) = launch_browser().await.unwrap();
 /// // Use the client to interact with the browser

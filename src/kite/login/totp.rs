@@ -1,4 +1,4 @@
-//! Generate a TOTP (Time-based One-Time Password).
+//! Generate a TOTP (Time-based One-Time Password) compliant with RFC4648.
 //!
 //! This module provides utility functions for time and TOTP (Time-based One-Time
 //! Password) generation using the RFC4648 standard. It includes functions to get
