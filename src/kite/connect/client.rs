@@ -54,9 +54,9 @@ use crate::kite::{
 /// `Client` is a wrapper over `reqwest::Client` which holds a connection
 /// pool internally. It is advisable to create one and **reuse** it.
 ///
-/// You do **not** have to wrap `KiteConnectClient` in an [`Rc`] or [`Arc`] to
+/// You do **not** have to wrap `KiteConnectClient` in an [`std::rc::Rc`] or [`std::sync::Arc`] to
 /// **reuse** it because the `reqwest::Client` used internally already uses an
-/// [`Arc`].
+/// [`std::sync::Arc`].
 ///
 #[derive(Clone)]
 pub struct HTTPClient {
