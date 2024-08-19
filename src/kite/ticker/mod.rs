@@ -48,15 +48,18 @@
 
 // Contains the `WebSocketClient` and `TickerStream` structs, which are used to
 // connect to the WebSocket API and handle data streaming.
-pub mod client;
+mod client;
+#[allow(unused_imports)]
 pub use client::{TickerStream, WebSocketClient};
 
 // Defines the structures for managing the stream state and credentials, including
 // `KiteStreamCredentials` and `StreamState`.
 mod stream;
+#[allow(unused_imports)]
 pub use stream::{KiteStreamCredentials, StreamState};
 
 // Contains data models and request types like `Mode` and `TickerRequest` used
 // for interacting with the WebSocket API.
-pub mod models;
+mod models;
+#[allow(unused_imports)]
 pub use models::{Mode, TickerRequest};

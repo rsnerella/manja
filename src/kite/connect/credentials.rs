@@ -1,7 +1,7 @@
-//! User credential type for accessing Kite Connect trading APIs.
+//! User credential type for accessing Kite Connect API.
 //!
 //! This module provides the `KiteCredentials` struct for securely handling
-//! user credentials required for accessing Kite Connect trading APIs.
+//! user credentials required for accessing Kite Connect API.
 //!
 //! # Environment variables:
 //!

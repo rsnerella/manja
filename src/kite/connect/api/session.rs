@@ -32,7 +32,7 @@ use crate::kite::connect::{
 use crate::kite::error::Result;
 use crate::kite::traits::{KiteConfig, KiteLoginFlow};
 
-/// Represents the user session related API endpoints.
+/// User session related API endpoints for login and session management.
 ///
 /// This struct handles operations related to user sessions, including login
 /// and session management, by interfacing with the HTTP client.

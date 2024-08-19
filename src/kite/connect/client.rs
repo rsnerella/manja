@@ -10,8 +10,8 @@
 //!
 //! - **Session Management**: Manages user sessions, including storing and retrieving
 //!     session tokens.
-//! - **Request Handling**: Provides methods for making GET, POST, POST form, and
-//!     DELETE requests.
+//! - **Request Handling**: Provides methods for making `GET`, `POST`, `POST form`, and
+//!     `DELETE` requests.
 //! - **Configurable**: Allows configuration via the `Config` struct, which can
 //!     be loaded from environment variables or passed directly.
 //!
@@ -54,9 +54,9 @@ use crate::kite::{
 /// `Client` is a wrapper over `reqwest::Client` which holds a connection
 /// pool internally. It is advisable to create one and **reuse** it.
 ///
-/// You do **not** have to wrap `KiteConnectClient` in an [`Rc`] or [`Arc`] to
+/// You do **not** have to wrap `KiteConnectClient` in an [`std::rc::Rc`] or [`std::sync::Arc`] to
 /// **reuse** it because the `reqwest::Client` used internally already uses an
-/// [`Arc`].
+/// [`std::sync::Arc`].
 ///
 #[derive(Clone)]
 pub struct HTTPClient {
@@ -152,37 +152,37 @@ impl HTTPClient {
 
     /// To call [User] related APIs using this client.
     ///
-    pub fn user(&self) -> User {
+    pub fn user(&self) -> User<'_> {
         User::new(self)
     }
 
     /// To call [Session] related APIs using this client.
     ///
-    pub fn session(&mut self) -> Session {
+    pub fn session(&mut self) -> Session<'_> {
         Session::new(self)
     }
 
     /// To call [Orders] related APIs using this client.
     ///
-    pub fn orders(&mut self) -> Orders {
+    pub fn orders(&mut self) -> Orders<'_> {
         Orders::new(self)
     }
 
     /// To call [Market] related APIs using this client.
     ///
-    pub fn market(&mut self) -> Market {
+    pub fn market(&mut self) -> Market<'_> {
         Market::new(self)
     }
 
-    /// To call [Market] related APIs using this client.
+    /// To call [Margins] related APIs using this client.
     ///
-    pub fn margins(&mut self) -> Margins {
+    pub fn margins(&mut self) -> Margins<'_> {
         Margins::new(self)
     }
 
-    /// To call [Market] related APIs using this client.
+    /// To call [Charges] related APIs using this client.
     ///
-    pub fn charges(&mut self) -> Charges {
+    pub fn charges(&mut self) -> Charges<'_> {
         Charges::new(self)
     }
 

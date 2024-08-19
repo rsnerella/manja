@@ -5,17 +5,6 @@
 //! margins and charges, along with detailed structures for GST and other applicable
 //! charges.
 //!
-//! The module provides the following key structures:
-//!
-//! - `OrderMarginRequest`: Represents a request for calculating margins for an order.
-//! - `PNL`: Represents the profit and loss structure.
-//! - `GST`: Represents the GST structure.
-//! - `Charges`: Represents the various charges applied to an order.
-//! - `OrderMargin`: Represents the margin details for an order.
-//! - `BasketMargin`: Represents the margin details for a basket of orders.
-//! - `OrderChargesRequest`: Represents a request for calculating charges for an order.
-//! - `OrderCharges`: Represents the detailed charges for an order.
-//!
 use crate::kite::connect::models::exchange::Exchange;
 use crate::kite::connect::models::{OrderType, OrderVariety, ProductType, TransactionType};
 

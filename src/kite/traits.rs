@@ -4,16 +4,6 @@
 //! Kite Connect API via `manja`. These traits provide the necessary interfaces
 //! for managing API calls, handling authentication, and executing login flows.
 //!
-//! # Traits
-//!
-//! - `KiteConfig`: Provides configuration details required for making API calls,
-//!     including methods for constructing headers, generating URLs, and accessing
-//!     credentials.
-//! - `KiteLoginFlow`: Manages the login flow for KiteConnect, defining a method for
-//!     generating a request token by executing an asynchronous function.
-//! - `KiteAuth`: Adds the `Authorization` header to HTTP requests as required by
-//!     KiteConnect, with the `api_key:access_token` combination.
-//!
 use std::future::Future;
 use std::pin::Pin;
 
@@ -23,10 +13,10 @@ use secrecy::Secret;
 use crate::kite::connect::credentials::KiteCredentials;
 use crate::kite::error::Result;
 
-/// Trait for providing configuration details required for making API calls to KiteConnect.
+/// Configuration details required for making API calls to Kite Connect.
 ///
 /// This trait must be implemented by any configuration struct used by the `HTTPClient`
-/// for making REST API calls to KiteConnect. It includes methods for constructing headers,
+/// for making REST API calls to Kite Connect. It includes methods for constructing headers,
 /// generating URLs, and accessing credentials.
 ///
 pub trait KiteConfig: Send {
@@ -54,7 +44,7 @@ pub trait KiteConfig: Send {
     ///
     fn url(&self, path: &str) -> String;
 
-    /// Returns the base URL for the KiteConnect API.
+    /// Returns the base URL for Kite Connect API.
     ///
     /// # Returns
     ///
@@ -62,7 +52,7 @@ pub trait KiteConfig: Send {
     ///
     fn api_base(&self) -> &str;
 
-    /// Returns the URL for the KiteConnect login page.
+    /// Returns the URL for Kite Connect login page.
     ///
     /// # Returns
     ///
@@ -129,7 +119,7 @@ pub trait KiteAuth {
     /// * `api_key` - The API key for Kite Connect.
     /// * `access_token` - The access token obtained after login.
     ///
-    fn add_auth_header(&mut self, api_key: String, access_token: String) {}
+    fn add_auth_header(&mut self, api_key: String, access_token: String);
 }
 
 impl KiteAuth for HeaderMap {

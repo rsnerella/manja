@@ -15,7 +15,7 @@ use crate::kite::connect::{
 };
 use crate::kite::error::Result;
 
-/// User related API endpoints.
+/// User related API endpoints for fetching user margins and profile information.
 ///
 /// This struct provides methods to interact with the user-related API endpoints
 /// of Kite Connect. It allows fetching user profile information and user margins.

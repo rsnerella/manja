@@ -1,15 +1,15 @@
-//! Configuration for HTTP client.
+//! Configuration for asynchronous HTTP client.
 //!
-//! This module provides configurations for the HTTP client, including default
+//! This module provides configurations for the async HTTP client, including default
 //! URLs, environment variable handling, and header management for API requests.
 //!
 //! # Environment variables:
 //!
-//! The following environment variables can be overridden:
+//! The following environment variables can be specified to override the default values:
 //!
-//! - `KITECONNECT_API_BASE`: The default base URL for Kite Connect API.
-//! - `KITECONNECT_API_LOGIN`: The default login URL for Kite Connect API.
-//! - `KITECONNECT_API_REDIRECT`: The default redirect URL for Kite Connect API.
+//! - `KITECONNECT_API_BASE`: The base URL for Kite Connect API.
+//! - `KITECONNECT_API_LOGIN`: The login URL for Kite Connect API.
+//! - `KITECONNECT_API_REDIRECT`: The redirect URL for Kite Connect API.
 //!
 use reqwest::header::{HeaderMap, HeaderValue};
 use secrecy::{ExposeSecret, Secret};

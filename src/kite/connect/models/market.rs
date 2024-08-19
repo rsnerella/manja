@@ -8,30 +8,13 @@
 //! different modes of market quotes. These types are used for managing and
 //! processing trading instruments and their market data within the application.
 //!
-//! # Types and Structures
-//!
-//! - `InstrumentType`: Enum representing different types of instruments (e.g. equity,
-//!     futures, options).
-//! - `Instrument`: Struct representing a trading instrument with various
-//!     attributes such as token, symbol, name, price, etc.
-//! - `OHLC`: Struct representing OHLC data for a market instrument.
-//! - `DepthLevel`: Struct representing the depth of market data for buy or sell orders.
-//! - `Depth`: Struct representing the market depth for an instrument, including
-//!     bid and ask levels.
-//! - `QuoteMode`: Enum representing different modes of market quotes (Full, OHLC, LTP).
-//! - `KiteQuote`: Trait defining the mode of market quotes.
-//! - `FullQuote`: Struct representing a market quote for an instrument, including OHLC,
-//!     volume, and market depth.
-//! - `OHLCQuote`: Struct representing an OHLC + LTP quote for an instrument.
-//! - `LTPQuote`: Struct representing an LTP quote for an instrument.
-//!
 use crate::kite::connect::models::exchange::Exchange;
 
 use chrono::NaiveDate;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
-/// Represents the type of the instrument.
+/// Represents the type of the instrument, such as `equity`, `futures` or `option`.
 ///
 /// This enum contains several constant values used for specifying the type of instrument.
 ///
@@ -167,7 +150,7 @@ pub struct OHLC {
     pub close: f64,
 }
 
-/// Represents the depth of market data for buy or sell orders.
+/// Represents a depth level in the order book for an instrument.
 ///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DepthLevel {
@@ -202,6 +185,7 @@ pub enum QuoteMode {
 
 /// Trait for types that can be used as kite market quotes.
 ///
+#[allow(unused)]
 pub(crate) trait KiteQuote: DeserializeOwned {
     fn mode() -> QuoteMode;
 }

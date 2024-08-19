@@ -1,12 +1,13 @@
-/// Kite Connect login flow.
-///
-/// This module provides functionality to automate the login flow for Kite Connect
-/// using a headless browser. It handles navigating to the login page, entering
-/// user credentials, generating TOTP codes, and retrieving the request token from
-/// the redirected URL after successful authentication.
-///
-/// For detailed information, refer to the official Kite Connect API
-/// [documentation](https://kite.trade/docs/connect/v3/user/#login-flow).
+//! Kite Connect login flow.
+//!
+//! This module provides functionality to automate the login flow for Kite Connect
+//! using a headless browser. It handles navigating to the login page, entering
+//! user credentials, generating TOTP codes, and retrieving the request token from
+//! the redirected URL after successful authentication.
+//!
+//! For detailed information, refer to the official Kite Connect API
+//! [documentation](https://kite.trade/docs/connect/v3/user/#login-flow).
+//!
 use fantoccini::Locator;
 use secrecy::ExposeSecret;
 use url::Url;
@@ -38,6 +39,7 @@ use crate::kite::traits::KiteConfig;
 ///
 /// ```ignore
 /// use manja::kite::connect::config::Config;
+/// use manja::kite::login::browser_login_flow;
 ///
 /// let config = Config::default();
 /// let request_token = browser_login_flow(Box::new(config)).await?;
@@ -136,11 +138,6 @@ pub async fn browser_login_flow(config: Box<dyn KiteConfig>) -> Result<String> {
 /// A `Result` containing the `Url` if the browser navigates to the expected URL
 /// within the timeout period, or a `ManjaError` if it times out or encounters an error.
 ///
-/// # Example
-///
-/// ```ignore
-/// let url = wait_for_url(&client, "https://kite.trade", TokioDuration::from_secs(10)).await?;
-/// ```
 async fn wait_for_url(
     client: &BrowserClient,
     url_base: &str,

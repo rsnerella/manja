@@ -6,20 +6,6 @@
 //! Kite Connect API, making it easier to interact with different aspects of the
 //! trading platform.
 //!
-//! # Submodules
-//!
-//! - `session`: Handles the `/session/` API group, including authentication and
-//!     session management.
-//! - `user`: Manages the `/user/` API group, providing access to user-specific
-//!     data and settings.
-//! - `orders`: Handles the `/orders/` API group, facilitating order placement,
-//!     modification, and status checks.
-//! - `portfolio`: Manages the `/portfolio/` API group, including holdings and positions.
-//! - `market`: Handles the `/instruments/` and `/quote/` API group, providing
-//!     market data and instrument information.
-//! - `margins`: Manages the `/margins/` and `/charges/` API group, dealing with
-//!     margin requirements and charges.
-//!
 use backoff::{ExponentialBackoff, ExponentialBackoffBuilder};
 use std::time::Duration;
 

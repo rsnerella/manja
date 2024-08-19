@@ -1,10 +1,10 @@
 [package]
 name = "manja"
-version = "0.1.1-rc"
+version = "0.2.0"
 edition = "2021"
 authors = ["Paresh Saxena <pareshsaxena@gmail.com>"]
 license = "MIT"
-description = "Asynchronous client library for Zerodha's KiteConnect trading API"
+description = "Asynchronous client library for Zerodha's Kite Connect trading API"
 repository = "https://github.com/saxena-dev/manja"
 readme = "README.md"
 documentation = "https://docs.rs/manja"
@@ -14,7 +14,9 @@ exclude = [
     "examples/*",
     "*.md",
     ".*",
-    ".temp/*"
+    ".temp/*",
+    "kiteconnect-mocks",
+    "*.py"
 ]
 
 [dependencies]
