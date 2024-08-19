@@ -5,19 +5,6 @@
 //! detailed representations of user profiles, segment details, available and
 //! utilized balances, and segment kinds.
 //!
-//! The key components of this module are:
-//!
-//! - `UserProfile`: Represents the user's profile, including user ID, email,
-//!     name, broker details, and products enabled.
-//! - `Meta`: Represents additional metadata associated with the user's profile.
-//! - `UserMargins`: Represents the user's margins for equity and commodity segments.
-//! - `Segment`: Represents the details of a specific segment, including available
-//!     and utilized balances.
-//! - `Available`: Represents the available balance details within a segment.
-//! - `Utilised`: Represents the utilized balance details within a segment.
-//! - `SegmentKind`: Enum representing the different types of segments (commodity
-//!     and equity).
-//!
 use serde::{Deserialize, Serialize};
 use std::fmt;
 

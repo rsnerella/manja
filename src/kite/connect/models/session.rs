@@ -3,12 +3,6 @@
 //! This module provides structures and functions for managing user sessions
 //! and authentication in Kite Connect API.
 //!
-//! The key components of this module are:
-//!
-//! - `UserSession`: Represents a user's session, including authentication tokens
-//!     and profile information.
-//! - `Meta`: Represents additional metadata for the user session.
-//!
 use secrecy::{ExposeSecret, Secret};
 use serde::{ser::SerializeStruct, Deserialize, Deserializer, Serialize, Serializer};
 

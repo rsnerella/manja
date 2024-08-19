@@ -4,15 +4,6 @@
 //! detailed representations of orders, trades, and their various attributes,
 //! making it easier to manage and process trading activities.
 //!
-//! # Structures:
-//!
-//! - `OrderReceipt`: Represents an acknowledgment receipt when an order is
-//!     successfully placed.
-//! - `Order`: Represents an order in the trading system, containing details
-//!     such as order status, timestamps, and execution parameters.
-//! - `Trade`: Represents a trade executed at the exchange, providing information
-//!     about individual executions that fulfill an order.
-//!
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 

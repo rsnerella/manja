@@ -6,19 +6,6 @@
 //! position conversion requests, making it easier to manage and process
 //! portfolio activities.
 //!
-//! The key components of this module are:
-//!
-//! - `Holding`: Represents a holding in the user's portfolio, containing
-//!     long-term equity delivery stocks.
-//! - `Auction`: Represents an auction currently being held, with details about
-//!     the security being auctioned.
-//! - `Position`: Represents a position in the user's portfolio, containing short
-//!     to medium-term derivatives and intraday equity stocks.
-//! - `PositionType`: Enum representing the variety of positions, either overnight
-//!     or day positions.
-//! - `PositionConversionRequest`: Represents the request parameters required for
-//!     converting a position's margin product.
-//!
 use crate::kite::connect::models::{
     exchange::Exchange,
     order_enums::{ProductType, TransactionType},
@@ -26,7 +13,8 @@ use crate::kite::connect::models::{
 
 use serde::{Deserialize, Serialize};
 
-/// Represents a holding in the user's portfolio.
+/// Represents a holding in the user's portfolio, containing long-term equity
+/// delivery stocks.
 ///
 /// Holdings contain the user's portfolio of long-term equity delivery stocks.
 /// An instrument in a holdings portfolio remains there indefinitely until it
@@ -104,7 +92,8 @@ pub struct Holding {
     pub discrepancy: bool,
 }
 
-/// Represents an auction currently being held.
+/// Represents an auction currently being held, with details about the security
+/// being auctioned.
 ///
 /// This struct contains details about an auction such as the auction number,
 /// the security being auctioned, the last price of the security, and the quantity
@@ -181,7 +170,8 @@ pub struct Auction {
     pub auction_number: String,
 }
 
-/// Represents a position in the user's portfolio.
+/// Represents a position in the user's portfolio, containing short to medium-term
+/// derivatives and intraday equity stocks.
 ///
 /// Positions contain the user's portfolio of short to medium-term derivatives
 /// (futures and options contracts) and intraday equity stocks.
@@ -286,10 +276,10 @@ pub struct Position {
     pub day_sell_value: f64,
 }
 
-/// Represents the variety of an order.
+/// Represents the variety of an order, either overnight or day positions.
 ///
-/// This enum contains several constant values used for placing different types
-/// of orders.
+/// This enum contains constant values used for placing different types of
+/// orders.
 ///
 #[derive(Debug, Serialize, Deserialize)]
 pub enum PositionType {

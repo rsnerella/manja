@@ -9,20 +9,6 @@
 //! easy conversion to their string representations. This is particularly useful
 //! for logging, debugging, and routing API requests based on order attributes.
 //!
-//! # Enums
-//!
-//! - `OrderVariety`: Represents the different varieties of orders such as regular,
-//!     after market, cover, iceberg, and auction orders.
-//! - `OrderStatus`: Enumerates the various statuses an order can have during its
-//!     lifecycle, including both common and intermediate statuses.
-//! - `OrderType`: Defines the types of orders that can be placed, such as market,
-//!     limit, stoploss, and stoploss-market orders.
-//! - `ProductType`: Specifies the product type for an order, including cash and
-//!     carry, normal, and margin intraday squareoff.
-//! - `OrderValidity`: Indicates the validity period of an order, such as day,
-//!     immediate or cancel, and time to live.
-//! - `TransactionType`: Represents the type of transaction, either buy or sell.
-//!
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
@@ -149,9 +135,11 @@ impl fmt::Display for OrderStatus {
     }
 }
 
-/// Represents the type of an order.
+/// Represents the type of an order, such as `market`, `limit`, `stoploss`, and
+/// `stoploss-market` orders.
 ///
-/// This enum contains several constant values used for placing different types of orders.
+/// This enum contains several constant values used for placing different types
+/// of orders.
 ///
 #[derive(Debug, Serialize, Deserialize)]
 pub enum OrderType {
@@ -184,7 +172,8 @@ impl fmt::Display for OrderType {
     }
 }
 
-/// Represents the product type for an order.
+/// Represents the product type for an order, such as `cash and carry`, `normal`, and
+/// `margin intraday squareoff`.
 ///
 /// This enum contains several constant values used for specifying the product type.
 ///
@@ -214,7 +203,8 @@ impl fmt::Display for ProductType {
     }
 }
 
-/// Represents the validity of an order.
+/// Represents the validity of an order, such as `day`, `immediate or cancel`,
+/// and `time to live`.
 ///
 /// This enum contains several constant values used for specifying the order validity.
 ///
@@ -244,9 +234,10 @@ impl fmt::Display for OrderValidity {
     }
 }
 
-/// Represents the validity of an order.
+/// Represents the transaction type, either `BUY` or `SELL`.
 ///
-/// This enum contains several constant values used for specifying the order validity.
+/// This enum contains constant values used for specifying the order transaction
+/// type.
 ///
 #[derive(Debug, Serialize, Deserialize)]
 pub enum TransactionType {

@@ -12,7 +12,7 @@ use std::fmt;
 use serde::de::{self, Visitor};
 use serde::{Deserialize, Deserializer, Serialize};
 
-/// Exchange options.
+/// Represents the exchanges venues supported by Kite Connect API.
 ///
 /// This enum represents various exchange options available for trading.
 /// Each variant corresponds to a specific exchange or market segment.
