@@ -10,8 +10,8 @@
 //!
 //! - **Session Management**: Manages user sessions, including storing and retrieving
 //!     session tokens.
-//! - **Request Handling**: Provides methods for making GET, POST, POST form, and
-//!     DELETE requests.
+//! - **Request Handling**: Provides methods for making `GET`, `POST`, `POST form`, and
+//!     `DELETE` requests.
 //! - **Configurable**: Allows configuration via the `Config` struct, which can
 //!     be loaded from environment variables or passed directly.
 //!
@@ -174,13 +174,13 @@ impl HTTPClient {
         Market::new(self)
     }
 
-    /// To call [Market] related APIs using this client.
+    /// To call [Margins] related APIs using this client.
     ///
     pub fn margins(&mut self) -> Margins<'_> {
         Margins::new(self)
     }
 
-    /// To call [Market] related APIs using this client.
+    /// To call [Charges] related APIs using this client.
     ///
     pub fn charges(&mut self) -> Charges<'_> {
         Charges::new(self)
